@@ -17,6 +17,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * - mantenimiento
  * - uso
  * - pausa
+ * - deshabilitado
  */
 
 @Document(value = "estadoMonopatin")

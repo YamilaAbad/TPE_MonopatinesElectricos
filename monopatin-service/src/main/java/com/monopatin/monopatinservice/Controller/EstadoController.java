@@ -5,11 +5,10 @@ import com.monopatin.monopatinservice.Repository.EstadoRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
+
 
 @RestController
 @RequestMapping("/api/estadoMonopatin")
@@ -24,12 +23,12 @@ public class EstadoController {
         return estadoRepository.findAll();
     }
     //obtengo un estado en concreto
-    @GetMapping("/{_id}")
-    public Estado getEstado(@PathVariable ObjectId _id){
-        return estadoRepository.findById(_id).orElse(null);
+    @GetMapping("/{id}")
+    public Estado getEstado(@PathVariable ObjectId id){
+        return estadoRepository.findById(id).orElse(null);
     }
 
-    //creo un nuevo estado
+    //creo un nuevo estado (solo se usaria cuando hay un nuevo monopatin)
     @PostMapping("/crearEstado")
     @ResponseStatus(HttpStatus.OK)
     public void crearEstado(@RequestBody Estado estado){
@@ -38,18 +37,21 @@ public class EstadoController {
 
     //actualizo un estado
     @PutMapping("/actualizar/{id}")
-    public ResponseEntity<String> actualizarEstado(@PathVariable ObjectId id, @RequestBody Estado estado) {
+    @ResponseStatus(HttpStatus.OK)
+    public void actualizarEstado(@PathVariable ObjectId id, @RequestBody Estado estado) {
 
         Estado estadoActual = estadoRepository.findById(id).orElse(null);
         if (estadoActual != null) {
             estadoActual.setEstado(estado.getEstado());
             estadoRepository.save(estadoActual);
-            return ResponseEntity.ok("Estado actualizado correctamente.");
-        } else {
-            return ResponseEntity.notFound().build();
         }
     }
 
-
+    //elimino un estado
+    @DeleteMapping("eliminar/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void eliminarEstado(@PathVariable ObjectId id){
+        estadoRepository.deleteById(id);
+    }
 
 }
