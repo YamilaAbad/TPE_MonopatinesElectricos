@@ -1,59 +1,50 @@
 package com.monopatin.monopatinservice.Controller;
 
 import com.monopatin.monopatinservice.Model.Parada;
-import com.monopatin.monopatinservice.Repository.ParadaRepository;
+import com.monopatin.monopatinservice.Service.ParadaService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/parada")
+@ResponseStatus(HttpStatus.OK)
+@RequestMapping("/parada")
 public class ParadaController {
 
     @Autowired
-    private ParadaRepository paradaRepository;
+    ParadaService paradaService;
 
     //obtengo todas las paradas
-    @GetMapping
-    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/paradas")
     public List<Parada>getAllParadas(){
-        return paradaRepository.findAll();
+        return paradaService.listaParadas();
     }
 
     //obtengo una parada
-    @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public Parada getParada(@PathVariable ObjectId id){
-        return paradaRepository.findById(id).orElse(null);
+    @GetMapping("/paradaID/{id}")
+    public Optional<Parada> getParada(@PathVariable ObjectId id){
+        return paradaService.obtengoParadaID(id);
     }
 
     //creo una nueva parada
-    @PostMapping
-    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/crearParada")
     public void crearParada(@RequestBody Parada parada){
-        paradaRepository.save(parada);
+        paradaService.agregarNuevaParada(parada);
     }
 
     //actualizar una parada
-    @PutMapping("/actualizar/{id}")
-    @ResponseStatus(HttpStatus.OK)
+    @PutMapping("/actualizarParada/{id}")
     public void actualizarParada(@PathVariable ObjectId id, Parada parada){
-        Parada paradaActual = paradaRepository.findById(id).orElse(null);
-        if (paradaActual != null){
-            paradaActual.setNombre(parada.getNombre());
-            paradaActual.setUbicacion(parada.getUbicacion()); //en el caso de que se deseara ampliar la parada, su ubicacion seria distinta y tendria que ser actualizada.
-            paradaActual.setEstado(parada.getEstado());
-            paradaActual.setMonopatin(parada.getMonopatin());
-        }
+        paradaService.actualizarParada(id,parada);
     }
 
     //elimino una parada
-    @DeleteMapping("/eliminar/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public void eliminarParada(@PathVariable ObjectId id){
-        paradaRepository.deleteById(id);
+    @DeleteMapping("/eliminarParada/{id}")
+    public String eliminarParada(@PathVariable ObjectId id){
+       return paradaService.eliminarParada(id);
     }
 }

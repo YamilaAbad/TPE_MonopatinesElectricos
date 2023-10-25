@@ -1,57 +1,58 @@
 package com.monopatin.monopatinservice.Controller;
 
 import com.monopatin.monopatinservice.Model.Estado;
-import com.monopatin.monopatinservice.Repository.EstadoRepository;
+import com.monopatin.monopatinservice.Service.EstadoService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @RestController
-@RequestMapping("/api/estadoMonopatin")
+//@CrossOrigin(origins = "*")
+@RequestMapping("/estadoMonopatin")
+@ResponseStatus(HttpStatus.OK)
 public class EstadoController {
 
     @Autowired
-    private EstadoRepository estadoRepository;
+    EstadoService estadoService;
+
+   /* @GetMapping(value = "/microservicio_monopatin", produces = "application/json; charset-utf-8")
+    public String getHealthCheck(){
+        return "{  \" todoOk  \" : true}";
+    }*/
+
     //obtengo todos los estados
-    @GetMapping
-    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/estados")
+
     public List<Estado> getAllEstado(){
-        return estadoRepository.findAll();
+        return estadoService.listaEstados();
     }
     //obtengo un estado en concreto
-    @GetMapping("/{id}")
-    public Estado getEstado(@PathVariable ObjectId id){
-        return estadoRepository.findById(id).orElse(null);
+    @GetMapping("/estado/{id}")
+    public Optional<Estado> getEstado(@PathVariable ObjectId id){
+        return estadoService.obtenerEstadoID(id);
     }
 
     //creo un nuevo estado (solo se usaria cuando hay un nuevo monopatin)
     @PostMapping("/crearEstado")
-    @ResponseStatus(HttpStatus.OK)
     public void crearEstado(@RequestBody Estado estado){
-        estadoRepository.save(estado);
+        estadoService.crearEstado(estado);
     }
 
     //actualizo un estado
     @PutMapping("/actualizar/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public void actualizarEstado(@PathVariable ObjectId id, @RequestBody Estado estado) {
-
-        Estado estadoActual = estadoRepository.findById(id).orElse(null);
-        if (estadoActual != null) {
-            estadoActual.setEstado(estado.getEstado());
-            estadoRepository.save(estadoActual);
-        }
+    public Optional<Estado> actualizarEstado(@PathVariable ObjectId id, @RequestBody Estado estado) {
+       return estadoService.actualizarEstado(id,estado);
     }
 
     //elimino un estado
-    @DeleteMapping("eliminar/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public void eliminarEstado(@PathVariable ObjectId id){
-        estadoRepository.deleteById(id);
+    @DeleteMapping("/eliminar/{id}")
+    public String eliminarEstado(@PathVariable ObjectId id){
+       return estadoService.elimiarEstado(id);
     }
 
 }

@@ -1,58 +1,49 @@
 package com.monopatin.monopatinservice.Controller;
 
 import com.monopatin.monopatinservice.Model.Monopatin;
-import com.monopatin.monopatinservice.Repository.MonopatinRepository;
+import com.monopatin.monopatinservice.Service.MonopatinService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/monopatin")
+@ResponseStatus(HttpStatus.OK)
+@RequestMapping("/monopatin")
 public class MonopatinController {
     @Autowired
-    private MonopatinRepository monopatinRepository;
+    MonopatinService monopatinService;
 
     //obtengo todos los monopatines
-    @GetMapping
-    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/monopatines")
     public List<Monopatin> getAllMonopatines(){
-        return monopatinRepository.findAll();
+        return monopatinService.listaMonopatines();
     }
+
     //obtengo un monopatin
-    @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public Monopatin getMonopatin(@PathVariable ObjectId id){
-        return monopatinRepository.findById(id).orElse(null);
+    @GetMapping("/monopatin/{id}")
+
+    public Optional<Monopatin> getMonopatin(@PathVariable ObjectId id){
+        return monopatinService.obtenerMonopatin(id);
     }
     //creo un nuevo monopatin
-    @PostMapping
-    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/crearMonopatin")
     public void crearMonopatin(@RequestBody Monopatin monopatin){
-        monopatinRepository.save(monopatin);
+        monopatinService.guardarMonopatin(monopatin);
     }
     //actualizo un monopatin
     @PutMapping("/actualizar/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public void actualizarMonopatin(@PathVariable ObjectId id, @RequestBody Monopatin monopatin) {
-        Monopatin monopatinActual = monopatinRepository.findById(id).orElse(null);
-        if (monopatinActual != null) {
-            monopatinActual.setKm_totales(monopatin.getKm_totales());
-            monopatinActual.setUbicacion(monopatin.getUbicacion());
-            monopatinActual.setKm_recorridos(monopatin.getKm_recorridos());
-            monopatinActual.setEstado(monopatin.getEstado());
-            monopatinRepository.save(monopatinActual);
-
-        }
+    public void actualizarMonopatin( @RequestBody Monopatin monopatin,@PathVariable ObjectId id) {
+       monopatinService.actulizarMonopatin(monopatin,id);
     }
 
     //elimino un monopatin
     @DeleteMapping("/eliminar/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public void eliminarMonopatin(@PathVariable ObjectId id){
-        monopatinRepository.deleteById(id);
+    public String eliminarMonopatin(@PathVariable ObjectId id){
+       return monopatinService.eliminarMonopatin(id);
     }
 
 }

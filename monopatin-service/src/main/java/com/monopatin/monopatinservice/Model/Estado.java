@@ -13,10 +13,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * hace referencia al estado actual que tendra el monopatin
  *
  * los estados podran ser:
- * - apagado
+ * - habilitado
  * - mantenimiento
- * - uso
- * - pausa
  * - deshabilitado
  */
 
