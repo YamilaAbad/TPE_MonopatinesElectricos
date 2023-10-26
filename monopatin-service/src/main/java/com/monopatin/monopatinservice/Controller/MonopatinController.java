@@ -1,5 +1,6 @@
 package com.monopatin.monopatinservice.Controller;
 
+import com.monopatin.monopatinservice.DTO.MonopatinDTO;
 import com.monopatin.monopatinservice.Model.Monopatin;
 import com.monopatin.monopatinservice.Service.MonopatinService;
 import org.bson.types.ObjectId;
@@ -42,7 +43,7 @@ public class MonopatinController {
 
     //creo un nuevo monopatin
     @PostMapping("/crearMonopatin")
-    public void crearMonopatin(@RequestBody Monopatin monopatin){
+    public void crearMonopatin(@RequestBody MonopatinDTO monopatin){
         monopatinService.guardarMonopatin(monopatin);
     }
     //actualizo un monopatin

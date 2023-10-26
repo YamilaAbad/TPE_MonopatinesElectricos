@@ -1,5 +1,6 @@
 package com.monopatin.monopatinservice.Controller;
 
+import com.monopatin.monopatinservice.DTO.ParadaDTO;
 import com.monopatin.monopatinservice.Model.Monopatin;
 import com.monopatin.monopatinservice.Model.Parada;
 import com.monopatin.monopatinservice.Service.ParadaService;
@@ -51,7 +52,7 @@ public class ParadaController {
 
     //creo una nueva parada
     @PostMapping("/crearParada")
-    public void crearParada(@RequestBody Parada parada){
+    public void crearParada(@RequestBody ParadaDTO parada){
         paradaService.agregarNuevaParada(parada);
     }
 

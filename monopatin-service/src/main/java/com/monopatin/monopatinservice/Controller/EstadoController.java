@@ -12,18 +12,12 @@ import java.util.Optional;
 
 
 @RestController
-//@CrossOrigin(origins = "*")
 @RequestMapping("/estadoMonopatin")
 @ResponseStatus(HttpStatus.OK)
 public class EstadoController {
 
     @Autowired
     EstadoService estadoService;
-
-   /* @GetMapping(value = "/microservicio_monopatin", produces = "application/json; charset-utf-8")
-    public String getHealthCheck(){
-        return "{  \" todoOk  \" : true}";
-    }*/
 
     //obtengo todos los estados
     @GetMapping("/estados")

@@ -12,8 +12,6 @@ import java.util.Optional;
 public class EstadoServiceImp implements EstadoService{
     @Autowired
     EstadoRepository estadoRepository;
-    //@Autowired
-    //MongoTemplate mongoTemplate;
     @Override
     public List<Estado> listaEstados() {
         List<Estado> estados = estadoRepository.findAll();

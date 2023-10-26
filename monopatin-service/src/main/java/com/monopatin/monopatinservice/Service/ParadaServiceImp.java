@@ -1,14 +1,14 @@
 package com.monopatin.monopatinservice.Service;
 
+import com.monopatin.monopatinservice.DTO.ParadaDTO;
 import com.monopatin.monopatinservice.Model.Monopatin;
 import com.monopatin.monopatinservice.Model.Parada;
 import com.monopatin.monopatinservice.Repository.ParadaRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Optional;
 @Service
@@ -17,7 +17,12 @@ public class ParadaServiceImp implements ParadaService{
     ParadaRepository paradaRepository;
 
     @Override
-    public Parada agregarNuevaParada(Parada parada) {
+    public Parada agregarNuevaParada(ParadaDTO paradaDTO) {
+        Parada parada = new Parada();
+        parada.setNombre(paradaDTO.getNombre());
+        parada.setUbicacion(paradaDTO.getUbicacion());
+        parada.setEstado(paradaDTO.getEstado());
+        parada.setMonopatin(paradaDTO.getMonopatin());
         return paradaRepository.insert(parada);
     }
 
@@ -99,5 +104,8 @@ public class ParadaServiceImp implements ParadaService{
         Parada parada = this.paradaExistente(ubicacion);
         return parada.getMonopatin();
     }
-
+    //para punto 3-G
+    //0.003236 coordenada = a 100 mts
+    // el valor donde estoy + (0.003236*3) y ahi veo si esta o no cerca de alguna de las coordenadas de los monopatines
+    // *3 por ejemplo para que se tome como "cerca" 300 mts a mi alrededor
 }

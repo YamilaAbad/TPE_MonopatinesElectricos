@@ -1,10 +1,10 @@
 package com.monopatin.monopatinservice.Service;
 
+import com.monopatin.monopatinservice.DTO.MonopatinDTO;
 import com.monopatin.monopatinservice.Model.Monopatin;
 import com.monopatin.monopatinservice.Repository.MonopatinRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -14,11 +14,14 @@ import java.util.Optional;
 public class MonopatinServiceImp implements MonopatinService {
     @Autowired
     MonopatinRepository monopatinRepository;
-    @Autowired
-    MongoTemplate mongoTemplate;
     @Override
-    public Monopatin guardarMonopatin(Monopatin monopatin) {
-       return monopatinRepository.insert(monopatin);
+    public void guardarMonopatin(MonopatinDTO monopatinDTO) {
+        Monopatin monopatin = new Monopatin();
+        monopatin.setKm_totales(monopatinDTO.getKm_totales());
+        monopatin.setUbicacion(monopatinDTO.getUbicacion());
+        monopatin.setKm_recorridos(monopatinDTO.getKm_recorridos());
+        monopatin.setEstado(monopatinDTO.getEstado());
+        monopatinRepository.insert(monopatin);
     }
 
 

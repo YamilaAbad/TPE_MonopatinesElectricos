@@ -1,5 +1,6 @@
 package com.monopatin.monopatinservice.Service;
 
+import com.monopatin.monopatinservice.DTO.ParadaDTO;
 import com.monopatin.monopatinservice.Model.Monopatin;
 import com.monopatin.monopatinservice.Model.Parada;
 import org.bson.types.ObjectId;
@@ -9,7 +10,7 @@ import java.util.Optional;
 
 public interface ParadaService {
 
-    Parada agregarNuevaParada(Parada parada);
+    Parada agregarNuevaParada(ParadaDTO parada);
     String eliminarParada(ObjectId id);
     Optional<Parada> obtengoParadaID(ObjectId id);
     Optional<Parada> actualizarParada(ObjectId id, Parada parada);

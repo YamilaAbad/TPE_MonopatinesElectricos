@@ -1,0 +1,16 @@
+package com.monopatin.monopatinservice.DTO;
+
+import com.monopatin.monopatinservice.Model.Estado;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+public class MonopatinDTO {
+    private int km_totales;
+    private String ubicacion;
+    private int km_recorridos;
+    private Estado estado;
+}
