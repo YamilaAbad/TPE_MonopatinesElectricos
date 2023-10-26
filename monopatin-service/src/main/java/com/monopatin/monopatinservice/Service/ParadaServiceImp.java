@@ -8,14 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 @Service
 public class ParadaServiceImp implements ParadaService{
     @Autowired
     ParadaRepository paradaRepository;
-    //@Autowired
-    //MongoTemplate mongoTemplate;
+
     @Override
     public Parada agregarNuevaParada(Parada parada) {
         return paradaRepository.insert(parada);
@@ -49,6 +49,7 @@ public class ParadaServiceImp implements ParadaService{
             paradaActual.setUbicacion(parada.getUbicacion()); //en el caso de que se deseara ampliar la parada, su ubicacion seria distinta y tendria que ser actualizada.
             paradaActual.setEstado(parada.getEstado());
             paradaActual.setMonopatin(parada.getMonopatin());
+            paradaRepository.save(paradaActual);
         }
         return oParada;
     }
@@ -58,4 +59,45 @@ public class ParadaServiceImp implements ParadaService{
         List<Parada> paradas = paradaRepository.findAll();
         return paradas;
     }
+
+    @Override
+    public String estadoDeLaParadaActual(Parada parada, String ubicacion) {
+        if (ubicacion.equals(parada.getUbicacion()) && "permitida".equals(parada.getEstado())){
+            return "permitida";
+        }else
+            return "no permitida";
+    }
+
+    @Override
+    public void agregarMonopatinAParada(String ubicacion, Monopatin monopatin) {
+        Parada paradaActual = this.paradaExistente(ubicacion);
+        if(paradaActual != null){
+            paradaActual.addMonopatin(monopatin);
+            paradaRepository.save(paradaActual);
+        }
+    }
+
+    @Override
+    public Parada paradaExistente(String ubicacion) {
+        List<Parada> paradas = this.listaParadas();
+        boolean encontrada = false;
+        int i=0;
+        while (!encontrada){
+            if(ubicacion.equals(paradas.get(i).getUbicacion())){
+                encontrada=true;
+            }
+            i++;
+        }
+        if (encontrada){
+            return paradas.get(i-1);
+        }
+        return null;
+    }
+
+    @Override
+    public List<Monopatin> monopatinesEnParada(String ubicacion) {
+        Parada parada = this.paradaExistente(ubicacion);
+        return parada.getMonopatin();
+    }
+
 }

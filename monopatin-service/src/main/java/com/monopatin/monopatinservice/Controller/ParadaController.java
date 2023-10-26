@@ -1,5 +1,6 @@
 package com.monopatin.monopatinservice.Controller;
 
+import com.monopatin.monopatinservice.Model.Monopatin;
 import com.monopatin.monopatinservice.Model.Parada;
 import com.monopatin.monopatinservice.Service.ParadaService;
 import org.bson.types.ObjectId;
@@ -30,6 +31,24 @@ public class ParadaController {
         return paradaService.obtengoParadaID(id);
     }
 
+    //obtengo el estado de la parada actual, la ubicacion sería enviada mediante GPS la
+    @GetMapping("/estadoDeLaParada/{ubicacion}")
+    public String estadoDeLaParada(@RequestBody Parada parada,@PathVariable String ubicacion){
+        return paradaService.estadoDeLaParadaActual(parada, ubicacion);
+    }
+
+    //si existe la parada en la ubicación dada, la devuelve, si no devuelve null
+    @GetMapping("/paradaEnUbicacion/{ubicacion}")
+    public Parada paradaExistente(@PathVariable String ubicacion){
+        return paradaService.paradaExistente(ubicacion);
+    }
+
+    //obtengo los monopatines que se encuentran en una parada pasada por parametro
+    @GetMapping("/monopatinesEnParada/{ubicacion}")
+    public List<Monopatin> monopatinesEnParada(@PathVariable String ubicacion){
+        return paradaService.monopatinesEnParada(ubicacion);
+    }
+
     //creo una nueva parada
     @PostMapping("/crearParada")
     public void crearParada(@RequestBody Parada parada){
@@ -38,8 +57,12 @@ public class ParadaController {
 
     //actualizar una parada
     @PutMapping("/actualizarParada/{id}")
-    public void actualizarParada(@PathVariable ObjectId id, Parada parada){
+    public void actualizarParada(@PathVariable ObjectId id, @RequestBody Parada parada){
         paradaService.actualizarParada(id,parada);
+    }
+    @PutMapping("/agregarMonopatinAParada/{ubicacion}")
+    public void agregarMonopatinAParada(@PathVariable String ubicacion, @RequestBody Monopatin monopatin){
+        paradaService.agregarMonopatinAParada(ubicacion,monopatin);
     }
 
     //elimino una parada
