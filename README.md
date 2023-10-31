@@ -54,7 +54,7 @@ Controla las operaciones de las paradas:
 * Crear una nueva parada
 * Actualizar una parada existente
 * Agregar un monopatín a una parada
-# Repositorios 🛢↔🛢 ✔
+# Repositorios 🗄️↔🗄️ ✔
 El servicio interactúa con una base de datos MongoDB a través de repositorios dedicados a cada entidad principal para realizar operaciones de almacenamiento y recuperación de datos.
 
 ----
