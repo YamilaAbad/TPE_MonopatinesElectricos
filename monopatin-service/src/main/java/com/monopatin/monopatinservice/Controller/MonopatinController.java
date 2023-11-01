@@ -41,6 +41,12 @@ public class MonopatinController {
         return monopatinService.cantidadDeMonopatinesEstados();
     }
 
+    //lista de monopatines cercanos a la ubicacion enviada por endpoint (ubicacion del usuario)
+    @GetMapping("/monopatinesCercanos/{ubicacion}")
+    public List<MonopatinDTO> monopatinesCercanos(@PathVariable String ubicacion){
+        return monopatinService.monopatinesCercanos(ubicacion);
+    }
+
     //creo un nuevo monopatin
     @PostMapping("/crearMonopatin")
     public void crearMonopatin(@RequestBody MonopatinDTO monopatin){

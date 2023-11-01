@@ -1,6 +1,7 @@
 package com.monopatin.monopatinservice.Service;
 
 import com.monopatin.monopatinservice.DTO.MonopatinDTO;
+import com.monopatin.monopatinservice.Model.Estado;
 import com.monopatin.monopatinservice.Model.Monopatin;
 import com.monopatin.monopatinservice.Repository.MonopatinRepository;
 import org.bson.types.ObjectId;
@@ -90,4 +91,51 @@ public class MonopatinServiceImp implements MonopatinService {
         }
         return ("Monopatines habilitados: "+cantFun+"\nMonopatines en mantenimiento: "+cantMant);
     }
+
+    @Override
+    public List<MonopatinDTO> monopatinesCercanos(String ubicacion){
+        //ubicacion del usuario
+        List<MonopatinDTO> monopatinesCercanos = new ArrayList<>();
+        String ubicacionUsuario = ubicacion;
+        String[] coordenadas = ubicacionUsuario.split(",");
+        double latitudUsuario = Double.parseDouble(coordenadas[0]);
+        double longitudUsuario = Double.parseDouble(coordenadas[1]);
+        double distanciaMaxima = 0.3; // Umbral de distancia en kilómetros (300mts)
+        List<Monopatin> monopatines = this.listaMonopatines();
+
+        for(Monopatin m: monopatines){
+            String[] coordenadaMonopatin = m.getUbicacion().split(",");
+            double latitudMonopatin = Double.parseDouble(coordenadaMonopatin[0]);
+            double longitudMonopatin = Double.parseDouble(coordenadaMonopatin[1]);
+
+            double distancia = calcularDistancia(latitudUsuario, longitudUsuario, latitudMonopatin, longitudMonopatin);
+            if (distancia <= distanciaMaxima) {
+                MonopatinDTO monopatin = new MonopatinDTO();
+                monopatin.setKm_totales(m.getKm_totales());
+                monopatin.setUbicacion(m.getUbicacion());
+                monopatin.setKm_recorridos(m.getKm_recorridos());
+                monopatin.setEstado(m.getEstado());
+
+                monopatinesCercanos.add(monopatin);
+            }
+
+        }
+        return monopatinesCercanos;
+
+    }
+
+    private double calcularDistancia(double latitudUsuario, double longitudUsuario, double latitudMonopatin, double longitudMonopatin) {
+        int radioTierra = 6371; // Radio de la Tierra en kilómetros
+
+        double dLat = Math.toRadians(latitudMonopatin - latitudUsuario);
+        double dLon = Math.toRadians(longitudMonopatin - longitudUsuario);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(latitudUsuario)) * Math.cos(Math.toRadians(latitudMonopatin)) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double distancia = radioTierra * c;
+
+        return distancia; // Distancia en kilómetros
+    }
+
 }

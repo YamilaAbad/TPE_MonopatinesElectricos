@@ -15,4 +15,6 @@ public interface MonopatinService {
     List<Monopatin> listaMonopatines();
     List<Monopatin> reporteMonopatinesPorKmR(int km);
     String cantidadDeMonopatinesEstados();
+
+    List<MonopatinDTO> monopatinesCercanos(String ubicacion);
 }
