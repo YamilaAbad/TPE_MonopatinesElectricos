@@ -1,6 +1,7 @@
 package com.monopatin.monopatinservice.Service;
 
 import com.monopatin.monopatinservice.DTO.MonopatinDTO;
+import com.monopatin.monopatinservice.DTO.ViajeDTO;
 import com.monopatin.monopatinservice.Model.Monopatin;
 import org.bson.types.ObjectId;
 
@@ -17,4 +18,5 @@ public interface MonopatinService {
     String cantidadDeMonopatinesEstados();
 
     List<MonopatinDTO> monopatinesCercanos(String ubicacion);
+    void iniciarViaje(String viaje, ViajeDTO viajeDTO, ObjectId idMon);
 }

@@ -1,6 +1,7 @@
 package com.monopatin.monopatinservice.Controller;
 
 import com.monopatin.monopatinservice.DTO.MonopatinDTO;
+import com.monopatin.monopatinservice.DTO.ViajeDTO;
 import com.monopatin.monopatinservice.Model.Monopatin;
 import com.monopatin.monopatinservice.Service.MonopatinService;
 import org.bson.types.ObjectId;
@@ -51,6 +52,12 @@ public class MonopatinController {
     @PostMapping("/crearMonopatin")
     public void crearMonopatin(@RequestBody MonopatinDTO monopatin){
         monopatinService.guardarMonopatin(monopatin);
+    }
+
+    //inicio un viaje desde el monopatin dado
+    @PostMapping("/iniciarViaje/{idMon}")
+    public void iniciarViaje(@RequestBody ViajeDTO viajeDTO, @PathVariable ObjectId idMon){
+        monopatinService.iniciarViaje("/inicioViaje", viajeDTO, idMon);
     }
     //actualizo un monopatin
     @PutMapping("/actualizar/{km}/{ubicacion}/{estado}/{id}")

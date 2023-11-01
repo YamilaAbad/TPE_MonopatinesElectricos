@@ -1,18 +1,26 @@
 package com.monopatin.monopatinservice.Service;
 
 import com.monopatin.monopatinservice.DTO.MonopatinDTO;
-import com.monopatin.monopatinservice.Model.Estado;
+import com.monopatin.monopatinservice.DTO.ViajeDTO;
 import com.monopatin.monopatinservice.Model.Monopatin;
 import com.monopatin.monopatinservice.Repository.MonopatinRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 @Service
 public class MonopatinServiceImp implements MonopatinService {
+
+    @Value("${url_viaje}")
+    private String url_viaje;
+
+    @Autowired
+    RestTemplate restTemplate;
     @Autowired
     MonopatinRepository monopatinRepository;
     @Override
@@ -136,6 +144,18 @@ public class MonopatinServiceImp implements MonopatinService {
         double distancia = radioTierra * c;
 
         return distancia; // Distancia en kilómetros
+    }
+
+    public void iniciarViaje(String viaje, ViajeDTO viajeDto, ObjectId idMon){
+        Optional<Monopatin> monopatin = monopatinRepository.findById(idMon);
+        Monopatin monopatinEnViaje = monopatin.get();
+        if (monopatinEnViaje!=null){
+            int cant = monopatinEnViaje.getCantViajes();
+            monopatinEnViaje.setCantViajes(cant+1);
+            monopatinRepository.save(monopatinEnViaje);
+            this.restTemplate.postForObject(this.url_viaje+viaje, viajeDto, ViajeDTO.class);
+        }
+
     }
 
 }
