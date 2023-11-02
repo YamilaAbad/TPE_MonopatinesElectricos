@@ -153,9 +153,8 @@ public class MonopatinServiceImp implements MonopatinService {
             int cant = monopatinEnViaje.getCantViajes();
             monopatinEnViaje.setCantViajes(cant+1);
             monopatinRepository.save(monopatinEnViaje);
-            this.restTemplate.postForObject(this.url_viaje+viaje, viajeDto, ViajeDTO.class);
+            this.restTemplate.postForObject(this.url_viaje+viaje, monopatinEnViaje, Monopatin.class, viajeDto, ViajeDTO.class);
         }
 
     }
-
 }
