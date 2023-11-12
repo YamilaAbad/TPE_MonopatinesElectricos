@@ -1,12 +1,14 @@
 package com.monopatin.monopatinservice.Controller;
 
 import com.monopatin.monopatinservice.DTO.MonopatinDTO;
+import com.monopatin.monopatinservice.DTO.PausaDTO;
 import com.monopatin.monopatinservice.DTO.ViajeDTO;
 import com.monopatin.monopatinservice.Model.Monopatin;
 import com.monopatin.monopatinservice.Service.MonopatinService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -70,5 +72,19 @@ public class MonopatinController {
     public String eliminarMonopatin(@PathVariable ObjectId id){
        return monopatinService.eliminarMonopatin(id);
     }
+
+    @PutMapping("/finalizarViaje/{viajeId}")
+    public ResponseEntity<ViajeDTO> finalizarViaje(@PathVariable int viajeId, @RequestBody ViajeDTO viajeDTO) {
+        try {
+            monopatinService.finalizarViaje("/finalizarViaje/{viajeId}", viajeDTO, viajeId);
+            return new ResponseEntity<>(viajeDTO, HttpStatus.OK);
+        }catch (Exception e){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+
+
+
 
 }

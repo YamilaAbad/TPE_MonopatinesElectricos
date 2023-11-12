@@ -1,8 +1,11 @@
 package com.monopatin.monopatinservice.Service;
 
+import com.monopatin.monopatinservice.Controller.ParadaController;
 import com.monopatin.monopatinservice.DTO.MonopatinDTO;
+import com.monopatin.monopatinservice.DTO.PausaDTO;
 import com.monopatin.monopatinservice.DTO.ViajeDTO;
 import com.monopatin.monopatinservice.Model.Monopatin;
+import com.monopatin.monopatinservice.Model.Parada;
 import com.monopatin.monopatinservice.Repository.MonopatinRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +21,16 @@ public class MonopatinServiceImp implements MonopatinService {
 
     @Value("${url_viaje}")
     private String url_viaje;
+    @Value("${url_pausa}")
+    private String url_pausa;
+
 
     @Autowired
     RestTemplate restTemplate;
     @Autowired
     MonopatinRepository monopatinRepository;
+    @Autowired
+    ParadaController paradaController;
     @Override
     public void guardarMonopatin(MonopatinDTO monopatinDTO) {
         Monopatin monopatin = new Monopatin();
@@ -146,16 +154,42 @@ public class MonopatinServiceImp implements MonopatinService {
         return distancia; // Distancia en kilómetros
     }
 
+    /**
+     * Metodo para iniciar el viaje desde el monopatin
+     * @param viaje
+     * @param viajeDto
+     * @param idMon*/
     public void iniciarViaje(String viaje, ViajeDTO viajeDto, ObjectId idMon){
         Optional<Monopatin> monopatin = monopatinRepository.findById(idMon);
-        Monopatin monopatinEnViaje = monopatin.get();
+        Monopatin monopatinEnViaje = monopatin.orElse(null);
         if (monopatinEnViaje!=null){
+            //Agrego viaje al monopatin
             int cant = monopatinEnViaje.getCantViajes();
             monopatinEnViaje.setCantViajes(cant+1);
             monopatinRepository.save(monopatinEnViaje);
             this.restTemplate.postForObject(this.url_viaje+viaje, viajeDto, ViajeDTO.class);
         }
-
     }
+
+    /**
+     * Metodo para finalizar el viaje desde el monopatim
+     * @param viaje
+     * @param viajeDTO
+     * @param idViaje*/
+    @Override
+    public void finalizarViaje(String viaje, ViajeDTO viajeDTO, int idViaje) {
+        //verifico si es una parada permitida para dejar el monopatin
+        String ubicacion =viajeDTO.getDestinoDelViaje();
+        Parada parada = paradaController.paradaExistente(ubicacion);
+        String estadoDeLaParada= paradaController.estadoDeLaParada(parada, ubicacion);
+        //caso de ser una parada permita dejara finalizar el viaje
+        if("permitida".equals(estadoDeLaParada)){
+            this.restTemplate.put(this.url_viaje +viaje, viajeDTO, idViaje);
+        }
+        //En caso contrario el metodo arrojará un error
+    }
+
+
+
 
 }
