@@ -21,9 +21,6 @@ public class MonopatinServiceImp implements MonopatinService {
 
     @Value("${url_viaje}")
     private String url_viaje;
-    @Value("${url_pausa}")
-    private String url_pausa;
-
 
     @Autowired
     RestTemplate restTemplate;
@@ -187,6 +184,16 @@ public class MonopatinServiceImp implements MonopatinService {
             this.restTemplate.put(this.url_viaje +viaje, viajeDTO, idViaje);
         }
         //En caso contrario el metodo arrojará un error
+    }
+    @Override
+    public void pausarViaje(String viaje, PausaDTO pausaDTO, int idViaje){
+        this.restTemplate.postForObject(this.url_viaje + viaje, pausaDTO, Void.class, idViaje);
+    }
+
+    @Override
+    public void cancelarPausaEnViaje(String viaje, PausaDTO pausaDTO, int pausaId) {
+        String url = this.url_viaje + "/cancelarPausa/{pausaId}";
+        this.restTemplate.put(url, pausaDTO, pausaId);
     }
 
 

@@ -1,8 +1,15 @@
 package com.monopatin.monopatinservice.DTO;
 
-import java.sql.Time;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import java.sql.Time;
+@Setter
+@Getter
+@NoArgsConstructor
 public class PausaDTO {
+    private int pausaId;
     private Time horaInicioPausa;
     private Time horaFinPausa;
     private String estadoDeLaPausa;

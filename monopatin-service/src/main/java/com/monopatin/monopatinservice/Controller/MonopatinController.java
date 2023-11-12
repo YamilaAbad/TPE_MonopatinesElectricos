@@ -82,9 +82,27 @@ public class MonopatinController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
-
-
-
+    @PostMapping("pausaViaje/{idViaje}")
+    public ResponseEntity<ViajeDTO> pausarViaje(@PathVariable int idViaje, @RequestBody PausaDTO pausaDTO) {
+        try {
+            monopatinService.pausarViaje("/crearPausa/{idViaje}", pausaDTO, idViaje);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    ///
+    @PutMapping("cancelarpausa/{pausaId}")
+    public ResponseEntity<ViajeDTO> cancelarPausaEnViaje(@PathVariable int pausaId, @RequestBody PausaDTO pausaDTO) {
+        try {
+            monopatinService.cancelarPausaEnViaje("/cancelarPausa/{pausaId}", pausaDTO, pausaId);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
 
 }

@@ -22,5 +22,9 @@ public interface MonopatinService {
     void iniciarViaje(String viaje, ViajeDTO viajeDTO, ObjectId idMon);
     void finalizarViaje(String viaje, ViajeDTO viajeDTO, int idViaje);
 
+    void pausarViaje(String s, PausaDTO pausaDTO, int viajeId);
+
+    void cancelarPausaEnViaje(String viaje, PausaDTO pausaDTO, int idPausa);
+
 
 }
