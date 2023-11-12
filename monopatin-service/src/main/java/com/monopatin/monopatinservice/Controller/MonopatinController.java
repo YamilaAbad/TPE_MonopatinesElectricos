@@ -4,6 +4,7 @@ import com.monopatin.monopatinservice.DTO.MonopatinDTO;
 import com.monopatin.monopatinservice.DTO.PausaDTO;
 import com.monopatin.monopatinservice.DTO.ViajeDTO;
 import com.monopatin.monopatinservice.Model.Monopatin;
+import com.monopatin.monopatinservice.Service.JwtService;
 import com.monopatin.monopatinservice.Service.MonopatinService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,8 @@ import java.util.Optional;
 public class MonopatinController {
     @Autowired
     MonopatinService monopatinService;
-
+    @Autowired
+    JwtService jwtService;
     //obtengo todos los monopatines
     @GetMapping("/monopatines")
     public List<Monopatin> getAllMonopatines(){
@@ -39,9 +41,14 @@ public class MonopatinController {
         return monopatinService.reporteMonopatinesPorKmR(km);
     }
     //reporte de la cantidad de monopatines en operación vs en mantenimiento
-    @GetMapping("/reporteMonopatinesEstado")
-    public String cantidadDeMonopatinesEstados(){
-        return monopatinService.cantidadDeMonopatinesEstados();
+    @GetMapping("/reporteMonopatinesEstado/{token}")
+    public String cantidadDeMonopatinesEstados(String token){
+        System.out.println("llega antes de verificar");
+        if(jwtService.isTokenValid(token)) {
+            System.out.println("llega");
+            return monopatinService.cantidadDeMonopatinesEstados();
+        }
+        return null;
     }
 
     //lista de monopatines cercanos a la ubicacion enviada por endpoint (ubicacion del usuario)
@@ -59,6 +66,7 @@ public class MonopatinController {
     //inicio un viaje desde el monopatin dado
     @PostMapping("/iniciarViaje/{idMon}")
     public void iniciarViaje(@RequestBody ViajeDTO viajeDTO, @PathVariable ObjectId idMon){
+        //usuarioService.verificar("/getTokenUser",user)
         monopatinService.iniciarViaje("/inicioViaje", viajeDTO, idMon);
     }
     //actualizo un monopatin
