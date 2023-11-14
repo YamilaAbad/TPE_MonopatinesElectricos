@@ -1,45 +1,19 @@
 package com.monopatin.monopatinservice.Service;
 
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.security.core.GrantedAuthority;
 import java.security.Key;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-
 @Service
 public class JwtService {
 
     private static final String SECRET_KEY="586E3272357538782F413F4428472B486250655368566B597033700676397924"; //clave secreta para firmar el token
 
-    //genera un token JWT a partir de los detalles del usuario
-    public String getToken(UserDetails user) {
-        return getToken(new HashMap<>(),user);
-    }
-
-    private String getToken(Map<String,Object> extraClaims, UserDetails user) {
-        List<String> roles = user.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
-        return Jwts
-                .builder()
-                .setClaims(extraClaims)
-                .setSubject(user.getUsername())
-                .claim("roles",roles)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis()+1000*60*24))  //el token durara 1 día
-                .signWith(getKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
 
     //obtengo la clave de firma desde la clave secreta en Base64
     private Key getKey(){
@@ -53,12 +27,6 @@ public class JwtService {
     public boolean isTokenValid(String token) {
         final String username = getUsernameFromToken(token);
         return (!isTokenExpired(token) && username != null);
-    }
-
-    //verifico si un token JWT es válido para un usuario dado
-    public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username=getUsernameFromToken(token);
-        return (username.equals(userDetails.getUsername())&& !isTokenExpired(token));
     }
 
     //obtengo todas las reclamaciones del token JWT

@@ -50,17 +50,13 @@ public class MonopatinController {
     @GetMapping("/reporteMonopatinesEstado")
     public ResponseEntity<String> cantidadDeMonopatinesEstados(@RequestHeader("Authorization") String authorizationHeader){
         // Extrae el token del encabezado de autorización
-        System.out.println("llega");
-       // jwtAuthenticationFilter.doFilter(authorizationHeader,"Bearer",token);
         String token = authorizationHeader.replace("Bearer ", "");
         if(jwtService.isTokenValid(token)) {
-            String username = jwtService.getUsernameFromToken(token);
             return ResponseEntity.ok(monopatinService.cantidadDeMonopatinesEstados());
         }else {
             // El token no es válido, manejar el error según sea necesario
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
         }
-
     }
 
     private String obtenerReporteMonopatines(String username) {
