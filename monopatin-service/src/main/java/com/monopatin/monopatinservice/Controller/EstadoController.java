@@ -2,6 +2,7 @@ package com.monopatin.monopatinservice.Controller;
 
 import com.monopatin.monopatinservice.Model.Estado;
 import com.monopatin.monopatinservice.Service.EstadoService;
+import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/estadoMonopatin")
+@RequiredArgsConstructor
 @ResponseStatus(HttpStatus.OK)
 public class EstadoController {
 

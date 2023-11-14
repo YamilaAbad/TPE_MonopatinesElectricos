@@ -4,6 +4,7 @@ import com.monopatin.monopatinservice.DTO.ParadaDTO;
 import com.monopatin.monopatinservice.Model.Monopatin;
 import com.monopatin.monopatinservice.Model.Parada;
 import com.monopatin.monopatinservice.Service.ParadaService;
+import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import java.util.Optional;
 
 @RestController
 @ResponseStatus(HttpStatus.OK)
+@RequiredArgsConstructor
 @RequestMapping("/parada")
 public class ParadaController {
 

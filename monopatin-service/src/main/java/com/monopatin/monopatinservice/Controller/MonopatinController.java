@@ -3,9 +3,11 @@ package com.monopatin.monopatinservice.Controller;
 import com.monopatin.monopatinservice.DTO.MonopatinDTO;
 import com.monopatin.monopatinservice.DTO.PausaDTO;
 import com.monopatin.monopatinservice.DTO.ViajeDTO;
+import com.monopatin.monopatinservice.JWT.JwtAuthenticationFilter;
 import com.monopatin.monopatinservice.Model.Monopatin;
 import com.monopatin.monopatinservice.Service.JwtService;
 import com.monopatin.monopatinservice.Service.MonopatinService;
+import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,12 +19,16 @@ import java.util.Optional;
 
 @RestController
 @ResponseStatus(HttpStatus.OK)
+@RequiredArgsConstructor
 @RequestMapping("/monopatin")
 public class MonopatinController {
     @Autowired
     MonopatinService monopatinService;
-    @Autowired
-    JwtService jwtService;
+   @Autowired
+   JwtService jwtService;
+
+   @Autowired
+    JwtAuthenticationFilter jwtAuthenticationFilter;
     //obtengo todos los monopatines
     @GetMapping("/monopatines")
     public List<Monopatin> getAllMonopatines(){
@@ -41,14 +47,26 @@ public class MonopatinController {
         return monopatinService.reporteMonopatinesPorKmR(km);
     }
     //reporte de la cantidad de monopatines en operación vs en mantenimiento
-    @GetMapping("/reporteMonopatinesEstado/{token}")
-    public String cantidadDeMonopatinesEstados(String token){
-        System.out.println("llega antes de verificar");
+    @GetMapping("/reporteMonopatinesEstado")
+    public ResponseEntity<String> cantidadDeMonopatinesEstados(@RequestHeader("Authorization") String authorizationHeader){
+        // Extrae el token del encabezado de autorización
+        System.out.println("llega");
+       // jwtAuthenticationFilter.doFilter(authorizationHeader,"Bearer",token);
+        String token = authorizationHeader.replace("Bearer ", "");
         if(jwtService.isTokenValid(token)) {
-            System.out.println("llega");
-            return monopatinService.cantidadDeMonopatinesEstados();
+            String username = jwtService.getUsernameFromToken(token);
+            return ResponseEntity.ok(monopatinService.cantidadDeMonopatinesEstados());
+        }else {
+            // El token no es válido, manejar el error según sea necesario
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
         }
-        return null;
+
+    }
+
+    private String obtenerReporteMonopatines(String username) {
+        // Realiza la lógica para obtener el reporte de monopatines según el usuario
+        // Devuelve el reporte como un String
+        return "Reporte de monopatines para el usuario: " + username;
     }
 
     //lista de monopatines cercanos a la ubicacion enviada por endpoint (ubicacion del usuario)
