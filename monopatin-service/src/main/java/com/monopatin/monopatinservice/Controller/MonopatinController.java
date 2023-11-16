@@ -14,12 +14,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @ResponseStatus(HttpStatus.OK)
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 @RequestMapping("/monopatin")
 public class MonopatinController {
     @Autowired
@@ -29,6 +30,13 @@ public class MonopatinController {
 
    @Autowired
     JwtAuthenticationFilter jwtAuthenticationFilter;
+    // Agrega un constructor explícito
+    public MonopatinController (MonopatinService monopatinService, JwtService jwtService, JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.monopatinService = monopatinService;
+        this.jwtService = jwtService;
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
+
     //obtengo todos los monopatines
     @GetMapping("/monopatines")
     public List<Monopatin> getAllMonopatines(){

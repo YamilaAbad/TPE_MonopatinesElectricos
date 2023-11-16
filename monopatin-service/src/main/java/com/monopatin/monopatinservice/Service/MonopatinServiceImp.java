@@ -10,17 +10,22 @@ import com.monopatin.monopatinservice.Repository.MonopatinRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 @Service
 public class MonopatinServiceImp implements MonopatinService {
-
     @Value("${url_viaje}")
     private String url_viaje;
+
 
     @Autowired
     RestTemplate restTemplate;
@@ -28,6 +33,8 @@ public class MonopatinServiceImp implements MonopatinService {
     MonopatinRepository monopatinRepository;
     @Autowired
     ParadaController paradaController;
+
+
     @Override
     public void guardarMonopatin(MonopatinDTO monopatinDTO) {
         Monopatin monopatin = new Monopatin();
@@ -37,7 +44,6 @@ public class MonopatinServiceImp implements MonopatinService {
         monopatin.setEstado(monopatinDTO.getEstado());
         monopatinRepository.insert(monopatin);
     }
-
 
     @Override
     public String eliminarMonopatin(ObjectId id) {
@@ -51,7 +57,6 @@ public class MonopatinServiceImp implements MonopatinService {
         }
         return "No se proporcionó un id";
     }
-
 
     @Override
     public Optional<Monopatin> actulizarMonopatin(int km,String ubicacion, String estado, ObjectId id) {
@@ -131,7 +136,6 @@ public class MonopatinServiceImp implements MonopatinService {
 
                 monopatinesCercanos.add(monopatin);
             }
-
         }
         return monopatinesCercanos;
 
@@ -195,8 +199,5 @@ public class MonopatinServiceImp implements MonopatinService {
         String url = this.url_viaje + "/cancelarPausa/{pausaId}";
         this.restTemplate.put(url, pausaDTO, pausaId);
     }
-
-
-
 
 }
