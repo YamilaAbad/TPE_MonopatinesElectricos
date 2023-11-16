@@ -1,5 +1,6 @@
 package com.monopatin.monopatinservice.Service;
 
+import com.monopatin.monopatinservice.DTO.MonopatinDTO;
 import com.monopatin.monopatinservice.DTO.ParadaDTO;
 import com.monopatin.monopatinservice.Model.Monopatin;
 import com.monopatin.monopatinservice.Model.Parada;
@@ -46,7 +47,7 @@ public class ParadaServiceImp implements ParadaService{
     }
 
     @Override
-    public Optional<Parada> actualizarParada(ObjectId id, Parada parada) {
+    public Optional<Parada> actualizarParada(ObjectId id, ParadaDTO parada) {
         Optional<Parada> oParada = paradaRepository.findById(id);
         if (oParada.isPresent()){
             Parada paradaActual = oParada.get();
@@ -74,7 +75,7 @@ public class ParadaServiceImp implements ParadaService{
     }
 
     @Override
-    public void agregarMonopatinAParada(String ubicacion, Monopatin monopatin) {
+    public void agregarMonopatinAParada(String ubicacion, MonopatinDTO monopatin) {
         Parada paradaActual = this.paradaExistente(ubicacion);
         if(paradaActual != null){
             paradaActual.addMonopatin(monopatin);
@@ -94,13 +95,21 @@ public class ParadaServiceImp implements ParadaService{
             i++;
         }
         if (encontrada){
-            return paradas.get(i-1);
+            return  paradas.get(i-1);
         }
         return null;
     }
-
     @Override
-    public List<Monopatin> monopatinesEnParada(String ubicacion) {
+    public ParadaDTO castParadaDTO(Parada parada){
+        ParadaDTO p = new ParadaDTO();
+        p.setNombre(parada.getNombre());
+        p.setUbicacion(parada.getUbicacion());
+        p.setEstado(parada.getEstado());
+        p.setMonopatin(parada.getMonopatin());
+        return p;
+    }
+    @Override
+    public List<MonopatinDTO> monopatinesEnParada(String ubicacion) {
         Parada parada = this.paradaExistente(ubicacion);
         return parada.getMonopatin();
     }

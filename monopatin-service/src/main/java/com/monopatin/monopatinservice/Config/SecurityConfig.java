@@ -26,7 +26,7 @@ public class SecurityConfig{
                 .csrf(csrf -> csrf.disable())  //deshabilita la protección CSRF (Cross-Site Request Forgery)
                 .authorizeHttpRequests(authRequest ->
                         authRequest
-                                .requestMatchers("/monopatin/**").permitAll() //permite el acceso a rutas específicas sin autenticación (solo login y registro)
+                                .requestMatchers("/monopatin/**","/parada/**").permitAll() //permite el acceso a rutas específicas sin autenticación (solo login y registro)
                                 .anyRequest().authenticated() //requiere autenticación para cualquier otra solicitud
                 )
                 .sessionManagement(sessionManager ->

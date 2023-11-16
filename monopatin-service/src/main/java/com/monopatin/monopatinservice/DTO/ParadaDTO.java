@@ -14,5 +14,5 @@ public class ParadaDTO {
     private String nombre;
     private String ubicacion;
     private String estado;
-    private List<Monopatin> monopatin = new ArrayList<>();
+    private List<MonopatinDTO> monopatin = new ArrayList<>();
 }

@@ -31,30 +31,48 @@ public class MonopatinController {
     JwtAuthenticationFilter jwtAuthenticationFilter;
     //obtengo todos los monopatines
     @GetMapping("/monopatines")
-    public List<Monopatin> getAllMonopatines(){
-        return monopatinService.listaMonopatines();
+    public List<Monopatin> getAllMonopatines(@RequestHeader("Authorization") String authorizationHeader){
+        String token = authorizationHeader.replace("Bearer ", "");
+        if(jwtService.isTokenValid(token)) {
+            return monopatinService.listaMonopatines();
+        }else {
+            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
+            return null;
+        }
+
     }
 
     //obtengo un monopatin
     @GetMapping("/monopatin/{id}")
-    public Optional<Monopatin> getMonopatin(@PathVariable ObjectId id){
-        return monopatinService.obtenerMonopatin(id);
+    public Optional<Monopatin> getMonopatin(@RequestHeader("Authorization") String authorizationHeader, @PathVariable ObjectId id){
+        String token = authorizationHeader.replace("Bearer ", "");
+        if(jwtService.isTokenValid(token)) {
+            return monopatinService.obtenerMonopatin(id);
+        }else {
+            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
+            return null;
+        }
     }
 
     //reporte de uso de monopatines por kilómetros recorridos
     @GetMapping("/reporteMonopatinesPorKmsRecorridos/{km}")
-    public List<Monopatin> reporteMonopatinesPorKmR(@PathVariable int km){
-        return monopatinService.reporteMonopatinesPorKmR(km);
+    public List<Monopatin> reporteMonopatinesPorKmR(@RequestHeader("Authorization") String authorizationHeader, @PathVariable int km){
+        String token = authorizationHeader.replace("Bearer ", "");
+        if(jwtService.isTokenValid(token)) {
+            return monopatinService.reporteMonopatinesPorKmR(km);
+        }else {
+            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
+            return null;
+        }
     }
     //reporte de la cantidad de monopatines en operación vs en mantenimiento
     @GetMapping("/reporteMonopatinesEstado")
     public ResponseEntity<String> cantidadDeMonopatinesEstados(@RequestHeader("Authorization") String authorizationHeader){
-        // Extrae el token del encabezado de autorización
+        //extrae el token del encabezado de autorización
         String token = authorizationHeader.replace("Bearer ", "");
         if(jwtService.isTokenValid(token)) {
             return ResponseEntity.ok(monopatinService.cantidadDeMonopatinesEstados());
         }else {
-            // El token no es válido, manejar el error según sea necesario
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
         }
     }
@@ -67,14 +85,26 @@ public class MonopatinController {
 
     //lista de monopatines cercanos a la ubicacion enviada por endpoint (ubicacion del usuario)
     @GetMapping("/monopatinesCercanos/{ubicacion}")
-    public List<MonopatinDTO> monopatinesCercanos(@PathVariable String ubicacion){
-        return monopatinService.monopatinesCercanos(ubicacion);
+    public List<MonopatinDTO> monopatinesCercanos(@RequestHeader("Authorization") String authorizationHeader, @PathVariable String ubicacion){
+        String token = authorizationHeader.replace("Bearer ", "");
+        if(jwtService.isTokenValid(token)) {
+            return monopatinService.monopatinesCercanos(ubicacion);
+        }else {
+            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
+            return null;
+        }
+
     }
 
     //creo un nuevo monopatin
     @PostMapping("/crearMonopatin")
-    public void crearMonopatin(@RequestBody MonopatinDTO monopatin){
-        monopatinService.guardarMonopatin(monopatin);
+    public void crearMonopatin(@RequestHeader("Authorization") String authorizationHeader,@RequestBody MonopatinDTO monopatin){
+        String token = authorizationHeader.replace("Bearer ", "");
+        if(jwtService.isTokenValid(token)) {
+            monopatinService.guardarMonopatin(monopatin);
+        }else {
+            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
+        }
     }
 
     //inicio un viaje desde el monopatin dado

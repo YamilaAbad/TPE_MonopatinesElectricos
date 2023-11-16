@@ -1,5 +1,6 @@
 package com.monopatin.monopatinservice.Service;
 
+import com.monopatin.monopatinservice.DTO.MonopatinDTO;
 import com.monopatin.monopatinservice.DTO.ParadaDTO;
 import com.monopatin.monopatinservice.Model.Monopatin;
 import com.monopatin.monopatinservice.Model.Parada;
@@ -13,13 +14,14 @@ public interface ParadaService {
     Parada agregarNuevaParada(ParadaDTO parada);
     String eliminarParada(ObjectId id);
     Optional<Parada> obtengoParadaID(ObjectId id);
-    Optional<Parada> actualizarParada(ObjectId id, Parada parada);
+    Optional<Parada> actualizarParada(ObjectId id, ParadaDTO parada);
     List<Parada> listaParadas();
     String estadoDeLaParadaActual(Parada parada, String ubicacion);
 
-    void agregarMonopatinAParada(String ubicacion, Monopatin monopatin);
+    void agregarMonopatinAParada(String ubicacion, MonopatinDTO monopatin);
 
     Parada paradaExistente(String ubicacion);
+    ParadaDTO castParadaDTO(Parada parada);
 
-    List<Monopatin> monopatinesEnParada(String ubicacion);
+    List<MonopatinDTO> monopatinesEnParada(String ubicacion);
 }

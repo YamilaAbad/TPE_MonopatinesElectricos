@@ -1,5 +1,6 @@
 package com.monopatin.monopatinservice.Model;
 
+import com.monopatin.monopatinservice.DTO.MonopatinDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,9 +22,9 @@ public class Parada {
     private String nombre;
     private String ubicacion;
     private String estado;
-    private List<Monopatin> monopatin = new ArrayList<>();
+    private List<MonopatinDTO> monopatin = new ArrayList<>();
 
-    public void addMonopatin(Monopatin m){
+    public void addMonopatin(MonopatinDTO m){
         monopatin.add(m);
     }
 }

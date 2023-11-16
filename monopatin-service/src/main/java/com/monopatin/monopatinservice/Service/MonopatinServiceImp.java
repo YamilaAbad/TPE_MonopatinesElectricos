@@ -26,8 +26,9 @@ public class MonopatinServiceImp implements MonopatinService {
     RestTemplate restTemplate;
     @Autowired
     MonopatinRepository monopatinRepository;
+
     @Autowired
-    ParadaController paradaController;
+    ParadaService paradaService;
     @Override
     public void guardarMonopatin(MonopatinDTO monopatinDTO) {
         Monopatin monopatin = new Monopatin();
@@ -177,8 +178,8 @@ public class MonopatinServiceImp implements MonopatinService {
     public void finalizarViaje(String viaje, ViajeDTO viajeDTO, int idViaje) {
         //verifico si es una parada permitida para dejar el monopatin
         String ubicacion =viajeDTO.getDestinoDelViaje();
-        Parada parada = paradaController.paradaExistente(ubicacion);
-        String estadoDeLaParada= paradaController.estadoDeLaParada(parada, ubicacion);
+        Parada parada = paradaService.paradaExistente(ubicacion);
+        String estadoDeLaParada= paradaService.estadoDeLaParadaActual(parada, ubicacion);
         //caso de ser una parada permita dejara finalizar el viaje
         if("permitida".equals(estadoDeLaParada)){
             this.restTemplate.put(this.url_viaje +viaje, viajeDTO, idViaje);

@@ -23,7 +23,6 @@ public class EstadoController {
 
     //obtengo todos los estados
     @GetMapping("/estados")
-
     public List<Estado> getAllEstado(){
         return estadoService.listaEstados();
     }
