@@ -10,16 +10,24 @@ import java.util.Optional;
 import java.util.List;
 public interface MonopatinService {
     void guardarMonopatin(MonopatinDTO monopatin);
+
     String eliminarMonopatin(ObjectId id);
+
     //actualiza todos los datos del monopatin
-    Optional<Monopatin>actulizarMonopatin(int km,String ubicacion, String estado, ObjectId id);
+    Optional<Monopatin> actulizarMonopatin(int km, String ubicacion, String estado, ObjectId id);
+
     Optional<Monopatin> obtenerMonopatin(ObjectId id);
+
     List<Monopatin> listaMonopatines();
+
     List<Monopatin> reporteMonopatinesPorKmR(int km);
+
     String cantidadDeMonopatinesEstados();
 
     List<MonopatinDTO> monopatinesCercanos(String ubicacion);
+
     void iniciarViaje(String viaje, ViajeDTO viajeDTO, ObjectId idMon);
+
     void finalizarViaje(String viaje, ViajeDTO viajeDTO, int idViaje);
 
     void pausarViaje(String s, PausaDTO pausaDTO, int viajeId);
@@ -27,4 +35,8 @@ public interface MonopatinService {
     void cancelarPausaEnViaje(String viaje, PausaDTO pausaDTO, int idPausa);
 
 
+
+
 }
+
+

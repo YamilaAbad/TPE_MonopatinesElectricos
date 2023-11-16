@@ -26,4 +26,6 @@ public class Estado {
     @Id
     private ObjectId idEstadoMonopatin;
     private String estado;
+
+
 }

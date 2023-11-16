@@ -1,6 +1,5 @@
 package com.monopatin.monopatinservice.Service;
 
-import com.monopatin.monopatinservice.Controller.ParadaController;
 import com.monopatin.monopatinservice.DTO.MonopatinDTO;
 import com.monopatin.monopatinservice.DTO.PausaDTO;
 import com.monopatin.monopatinservice.DTO.ViajeDTO;
@@ -18,10 +17,8 @@ import java.util.List;
 import java.util.Optional;
 @Service
 public class MonopatinServiceImp implements MonopatinService {
-
     @Value("${url_viaje}")
     private String url_viaje;
-
     @Autowired
     RestTemplate restTemplate;
     @Autowired
@@ -39,7 +36,6 @@ public class MonopatinServiceImp implements MonopatinService {
         monopatinRepository.insert(monopatin);
     }
 
-
     @Override
     public String eliminarMonopatin(ObjectId id) {
         if(id != null){
@@ -52,7 +48,6 @@ public class MonopatinServiceImp implements MonopatinService {
         }
         return "No se proporcionó un id";
     }
-
 
     @Override
     public Optional<Monopatin> actulizarMonopatin(int km,String ubicacion, String estado, ObjectId id) {
@@ -132,7 +127,6 @@ public class MonopatinServiceImp implements MonopatinService {
 
                 monopatinesCercanos.add(monopatin);
             }
-
         }
         return monopatinesCercanos;
 
@@ -196,8 +190,5 @@ public class MonopatinServiceImp implements MonopatinService {
         String url = this.url_viaje + "/cancelarPausa/{pausaId}";
         this.restTemplate.put(url, pausaDTO, pausaId);
     }
-
-
-
 
 }
