@@ -28,9 +28,6 @@ public class MonopatinController {
    @Autowired
    JwtService jwtService;
 
-   @Autowired
-    JwtAuthenticationFilter jwtAuthenticationFilter;
-
     //obtengo todos los monopatines
     @GetMapping("/monopatines")
     public List<Monopatin> getAllMonopatines(@RequestHeader("Authorization") String authorizationHeader){
@@ -108,52 +105,69 @@ public class MonopatinController {
             ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
         }
     }
-
     //inicio un viaje desde el monopatin dado
     @PostMapping("/iniciarViaje/{idMon}")
-    public void iniciarViaje(@RequestBody ViajeDTO viajeDTO, @PathVariable ObjectId idMon){
-        //usuarioService.verificar("/getTokenUser",user)
-        monopatinService.iniciarViaje("/inicioViaje", viajeDTO, idMon);
+    public void iniciarViaje(@RequestHeader("Authorization") String authorizationHeader,@RequestBody ViajeDTO viajeDTO, @PathVariable ObjectId idMon){
+        String token = authorizationHeader.replace("Bearer ", "");
+        if(jwtService.isTokenValid(token)) {
+            monopatinService.iniciarViaje("/inicioViaje", viajeDTO, idMon);//usuarioService.verificar("/getTokenUser",user)
+        }else {
+            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
+        }
     }
     //actualizo un monopatin
     @PutMapping("/actualizar/{km}/{ubicacion}/{estado}/{id}")
-    public void actualizarMonopatin( @PathVariable int km,@PathVariable String ubicacion,@PathVariable String estado,@PathVariable ObjectId id) {
-       monopatinService.actulizarMonopatin(km, ubicacion, estado,id);
+    public void actualizarMonopatin(@RequestHeader("Authorization") String authorizationHeader, @PathVariable int km,@PathVariable String ubicacion,@PathVariable String estado,@PathVariable ObjectId id) {
+        String token = authorizationHeader.replace("Bearer ", "");
+        if(jwtService.isTokenValid(token)) {
+            monopatinService.actulizarMonopatin(km, ubicacion, estado, id);
+        }else{
+            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
+
+        }
+
     }
 
     //elimino un monopatin
     @DeleteMapping("/eliminar/{id}")
-    public String eliminarMonopatin(@PathVariable ObjectId id){
-       return monopatinService.eliminarMonopatin(id);
+    public String eliminarMonopatin(@RequestHeader("Authorization") String authorizationHeader, @PathVariable ObjectId id){
+        String token = authorizationHeader.replace("Bearer ", "");
+        if(jwtService.isTokenValid(token)) {
+            return monopatinService.eliminarMonopatin(id);
+        }else{
+            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
+            return null;
+        }
     }
 
     @PutMapping("/finalizarViaje/{viajeId}")
-    public ResponseEntity<ViajeDTO> finalizarViaje(@PathVariable int viajeId, @RequestBody ViajeDTO viajeDTO) {
-        try {
+    public ResponseEntity<ViajeDTO> finalizarViaje(@RequestHeader("Authorization") String authorizationHeader, @PathVariable int viajeId, @RequestBody ViajeDTO viajeDTO) {
+        String token = authorizationHeader.replace("Bearer ", "");
+        if(jwtService.isTokenValid(token)) {
             monopatinService.finalizarViaje("/finalizarViaje/{viajeId}", viajeDTO, viajeId);
             return new ResponseEntity<>(viajeDTO, HttpStatus.OK);
-        }catch (Exception e){
+        }else{
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
     @PostMapping("pausaViaje/{idViaje}")
-    public ResponseEntity<ViajeDTO> pausarViaje(@PathVariable int idViaje, @RequestBody PausaDTO pausaDTO) {
-        try {
+    public ResponseEntity<ViajeDTO> pausarViaje(@RequestHeader("Authorization") String authorizationHeader, @PathVariable int idViaje, @RequestBody PausaDTO pausaDTO) {
+        String token = authorizationHeader.replace("Bearer ", "");
+        if(jwtService.isTokenValid(token)) {
             monopatinService.pausarViaje("/crearPausa/{idViaje}", pausaDTO, idViaje);
             return new ResponseEntity<>(HttpStatus.OK);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else{
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    ///
+
     @PutMapping("cancelarpausa/{pausaId}")
-    public ResponseEntity<ViajeDTO> cancelarPausaEnViaje(@PathVariable int pausaId, @RequestBody PausaDTO pausaDTO) {
-        try {
+    public ResponseEntity<ViajeDTO> cancelarPausaEnViaje(@RequestHeader("Authorization") String authorizationHeader, @PathVariable int pausaId, @RequestBody PausaDTO pausaDTO) {
+        String token = authorizationHeader.replace("Bearer ", "");
+        if(jwtService.isTokenValid(token)) {
             monopatinService.cancelarPausaEnViaje("/cancelarPausa/{pausaId}", pausaDTO, pausaId);
             return new ResponseEntity<>(HttpStatus.OK);
-        } catch (Exception e) {
-            e.printStackTrace();
+        }else{
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

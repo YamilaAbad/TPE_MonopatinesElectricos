@@ -21,7 +21,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @RequestMapping("/parada")
 public class ParadaController {
-
     @Autowired
     ParadaService paradaService;
 
