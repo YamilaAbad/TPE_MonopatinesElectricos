@@ -155,16 +155,29 @@ public class MonopatinServiceImp implements MonopatinService {
      * @param viajeDto
      * @param idMon
      */
-    public void iniciarViaje(String viaje, ViajeDTO viajeDto, ObjectId idMon) {
-        Optional<Monopatin> monopatin = monopatinRepository.findById(idMon);
-        Monopatin monopatinEnViaje = monopatin.orElse(null);
+    public void iniciarViaje(String viaje, ViajeDTO viajeDto, ObjectId idMon, String token) {
+        Optional<Monopatin> monopatinOptional = monopatinRepository.findById(idMon);
+        Monopatin monopatinEnViaje = monopatinOptional.orElse(null);
+
         if (monopatinEnViaje != null) {
-            //Agrego viaje al monopatin
+            // Agrego viaje al monopatin
             int cant = monopatinEnViaje.getCantViajes();
             monopatinEnViaje.setCantViajes(cant + 1);
-            //vinculamos el viaje al monopatin
+
+            // Vinculamos el viaje al monopatin
             viajeDto.setIdMonopatin(idMon);
-            this.restTemplate.postForObject(this.url_viaje + viaje, monopatinEnViaje, Monopatin.class, viajeDto, ViajeDTO.class);
+
+            // Configuración de encabezados y entidad HTTP
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + token);
+            HttpEntity<Monopatin> requestEntity = new HttpEntity<>(monopatinEnViaje, headers);
+
+            // Llamada al servicio de viaje utilizando el endpoint fijo
+            ResponseEntity<Void> response = restTemplate.exchange(this.url_viaje+viaje, HttpMethod.POST, requestEntity, Void.class, viajeDto);
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                response.getBody();
+            }
         }
     }
 
@@ -176,7 +189,7 @@ public class MonopatinServiceImp implements MonopatinService {
      * @param idViaje
      */
     @Override
-    public void finalizarViaje(String viaje, ViajeDTO viajeDTO, int idViaje) {
+    public void finalizarViaje(String viaje, ViajeDTO viajeDTO, int idViaje, String token) {
         //verifico si es una parada permitida para dejar el monopatin
         String ubicacion = viajeDTO.getDestinoDelViaje();
         Parada parada = paradaService.paradaExistente(ubicacion);
@@ -232,7 +245,100 @@ public class MonopatinServiceImp implements MonopatinService {
                 }
             }
         }
-
         return filtrado;
     }
+    @Override
+    public List<ViajeDTO>obtenerTodosLosViajes(String viaje, String token) {
+        String url = this.url_viaje+viaje;
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        ResponseEntity<List<ViajeDTO>> response = restTemplate.exchange(
+                url, HttpMethod.GET, entity, new ParameterizedTypeReference<List<ViajeDTO>>() {}
+        );
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return response.getBody();
+        } else {
+            // Manejar otros códigos de estado según sea necesario
+            return null;
+        }
+    }
+
+    @Override
+    public List<ViajeDTO> obtenerTodosLosViajesConPausas(String viaje, String token) {
+        String url = this.url_viaje+viaje;
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        ResponseEntity<List<ViajeDTO>> response = restTemplate.exchange(
+                url, HttpMethod.GET, entity, new ParameterizedTypeReference<List<ViajeDTO>>() {}
+        );
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return response.getBody();
+        } else {
+            // Manejar otros códigos de estado según sea necesario
+            return null;
+        }
+    }
+
+    @Override
+    public List<ViajeDTO> obtenerTodosLosViajesSinPausas(String viaje, String token) {
+        String url = this.url_viaje+viaje;
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        ResponseEntity<List<ViajeDTO>> response = restTemplate.exchange(
+                url, HttpMethod.GET, entity, new ParameterizedTypeReference<List<ViajeDTO>>() {}
+        );
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return response.getBody();
+        } else {
+            // Manejar otros códigos de estado según sea necesario
+            return null;
+        }
+    }
+
+    @Override
+    public ResponseEntity<String> generarInformeUsoMonopatines( String viaje, int kmParaMantenimiento, boolean incluirPausas, String token) {
+
+        StringBuilder informe = new StringBuilder();
+        List<ViajeDTO> viajes = obtenerTodosLosViajes("/viajes", token);
+
+        List<Monopatin> monopatines = listaMonopatines();
+
+        for (Monopatin monopatin : monopatines) {
+            int kmRecorridos = monopatin.getKm_recorridos();
+            String estado = monopatin.getEstado().getEstado();
+
+            // Verificar si el monopatín necesita mantenimiento
+            boolean necesitaMantenimiento = kmRecorridos >= kmParaMantenimiento;
+
+            // Lógica para determinar si se deben incluir pausas o no
+            List<ViajeDTO> viajesMonopatin = incluirPausas ? obtenerTodosLosViajesSinPausas("/viajesSinPausas", token)
+                    : obtenerTodosLosViajesConPausas("/viajesConPausas", token);
+
+            informe.append("Monopatin ID: ").append(monopatin.getIdMonopatin()).append("\n");
+            informe.append("Kilometros recorridos: ").append(kmRecorridos).append("\n");
+            informe.append("Estado: ").append(estado).append("\n");
+
+            // Agregar información de mantenimiento si es necesario
+            if (necesitaMantenimiento) {
+                informe.append("¡Este monopatín necesita mantenimiento!\n");
+            }
+
+            // Agregar información de cada viaje al informe
+            for (ViajeDTO viajeDTO : viajesMonopatin) {
+                informe.append("Origen: ").append(viajeDTO.getOrigenDelViaje()).append("\n");
+                informe.append("Destino: ").append(viajeDTO.getDestinoDelViaje()).append("\n");
+                // Agregar más detalles según sea necesario
+                informe.append("\n");
+            }
+        }
+        // Construir un ResponseEntity con el informe y el código de estado OK
+        return ResponseEntity.ok(informe.toString());
+    }
+
+
+
+
 }

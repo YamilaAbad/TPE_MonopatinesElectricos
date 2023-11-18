@@ -20,5 +20,4 @@ public class ViajeDTO {
     private Timestamp fechaDelViaje;
     private boolean isFinalizado;
     private double cobroViaje;
-
 }

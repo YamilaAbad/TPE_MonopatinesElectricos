@@ -27,9 +27,9 @@ public interface MonopatinService {
 
     List<MonopatinDTO> monopatinesCercanos(String ubicacion);
 
-    void iniciarViaje(String viaje, ViajeDTO viajeDTO, ObjectId idMon);
+    void iniciarViaje(String viaje, ViajeDTO viajeDTO, ObjectId idMon, String token);
 
-    void finalizarViaje(String viaje, ViajeDTO viajeDTO, int idViaje);
+    void finalizarViaje(String viaje, ViajeDTO viajeDTO, int idViaje, String token);
 
     void pausarViaje(String s, PausaDTO pausaDTO, int viajeId);
 
@@ -39,6 +39,15 @@ public interface MonopatinService {
     List<ViajeDTO> consultarViajesPorAño(String s, int anio, String token);
 
     List<Monopatin> obtenerMonopatinConMasViajesEnAnio(int anio, String token, int x);
+
+    List<ViajeDTO>obtenerTodosLosViajes(String viaje, String token);
+
+    List<ViajeDTO> obtenerTodosLosViajesConPausas(String viaje, String token);
+
+    List<ViajeDTO> obtenerTodosLosViajesSinPausas(String s, String token);
+
+    ResponseEntity<String> generarInformeUsoMonopatines(String viaje, int kmParaMantenimiento, boolean incluirPausas, java.lang.String token);
+
 }
 
 
