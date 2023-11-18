@@ -106,7 +106,7 @@ public class MonopatinController {
     }
 
     //inicio un viaje desde el monopatin dado
-    @PostMapping("/iniciarViaje/{idMon}")
+   @PostMapping("/iniciarViaje/{idMon}")
     public void iniciarViaje(@RequestHeader("Authorization") String authorizationHeader, @RequestBody ViajeDTO viajeDTO, @PathVariable ObjectId idMon) {
         String token = authorizationHeader.replace("Bearer ", "");
         if (jwtService.isTokenValid(token)) {
@@ -115,6 +115,10 @@ public class MonopatinController {
             ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
         }
     }
+    /*@PostMapping("/iniciarViaje/{idMon}")
+    public void iniciarViaje(@RequestBody ViajeDTO viajeDTO, @PathVariable ObjectId idMon) {
+        monopatinService.iniciarViaje("/inicioViaje", viajeDTO, idMon);//usuarioService.verificar("/getTokenUser",user)
+    }*/
 
     //actualizo un monopatin
     @PutMapping("/actualizar/{km}/{ubicacion}/{estado}/{id}")

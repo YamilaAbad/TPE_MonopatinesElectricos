@@ -180,6 +180,18 @@ public class MonopatinServiceImp implements MonopatinService {
             }
         }
     }
+    /*public void iniciarViaje(String viaje, ViajeDTO viajeDto, ObjectId idMon) {
+        Optional<Monopatin> monopatin = monopatinRepository.findById(idMon);
+        Monopatin monopatinEnViaje = monopatin.orElse(null);
+        if (monopatinEnViaje != null) {
+            //Agrego viaje al monopatin
+            int cant = monopatinEnViaje.getCantViajes();
+            monopatinEnViaje.setCantViajes(cant + 1);
+            //vinculamos el viaje al monopatin
+            viajeDto.setIdMonopatin(idMon);
+            this.restTemplate.postForObject(this.url_viaje + viaje, monopatinEnViaje, Monopatin.class, viajeDto, ViajeDTO.class);
+        }
+    }*/
 
     /**
      * Metodo para finalizar el viaje desde el monopatim

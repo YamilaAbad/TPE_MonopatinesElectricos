@@ -28,7 +28,7 @@ public interface MonopatinService {
     List<MonopatinDTO> monopatinesCercanos(String ubicacion);
 
     void iniciarViaje(String viaje, ViajeDTO viajeDTO, ObjectId idMon, String token);
-
+    //void iniciarViaje(String viaje, ViajeDTO viajeDTO, ObjectId idMon);
     void finalizarViaje(String viaje, ViajeDTO viajeDTO, int idViaje, String token);
 
     void pausarViaje(String s, PausaDTO pausaDTO, int viajeId);
