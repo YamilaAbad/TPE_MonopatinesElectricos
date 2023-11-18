@@ -38,7 +38,6 @@ public class MonopatinController {
             ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
             return null;
         }
-
     }
 
     //obtengo un monopatin
@@ -92,7 +91,6 @@ public class MonopatinController {
             ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
             return null;
         }
-
     }
 
     //creo un nuevo monopatin
@@ -125,7 +123,6 @@ public class MonopatinController {
             ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
 
         }
-
     }
 
     //elimino un monopatin
@@ -170,6 +167,26 @@ public class MonopatinController {
         }else{
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+    @GetMapping("/viajesPorAnio/{anio}")
+    public List<ViajeDTO>consultarViajesPorAño(@RequestHeader("Authorization") String authorizationHeader, @PathVariable int anio){
+        String token = authorizationHeader.replace("Bearer ", "");
+        if (jwtService.isTokenValid(token)) {
+            return monopatinService.consultarViajesPorAño("/viajesPorAnio/{anio}", anio, token);
+        } else {
+            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            return null;
+        }
+    }
+    @GetMapping("/monopatinesConMasDeXViajesEnAnio/{x}/{anio}")
+    public List<Monopatin> obtenerMonopatin(@RequestHeader("Authorization") String authorizationHeader,@PathVariable int anio, @PathVariable int x){
+        String token = authorizationHeader.replace("Bearer", "");
+        if(jwtService.isTokenValid(token)){
+            return monopatinService.obtenerMonopatinConMasViajesEnAnio(anio,token, x);
+        }else{
+             new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        return null;
     }
 
 

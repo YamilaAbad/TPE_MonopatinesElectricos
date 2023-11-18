@@ -9,12 +9,13 @@ import com.monopatin.monopatinservice.Repository.MonopatinRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+
 @Service
 public class MonopatinServiceImp implements MonopatinService {
     @Value("${url_viaje}")
@@ -26,6 +27,7 @@ public class MonopatinServiceImp implements MonopatinService {
 
     @Autowired
     ParadaService paradaService;
+
     @Override
     public void guardarMonopatin(MonopatinDTO monopatinDTO) {
         Monopatin monopatin = new Monopatin();
@@ -38,9 +40,9 @@ public class MonopatinServiceImp implements MonopatinService {
 
     @Override
     public String eliminarMonopatin(ObjectId id) {
-        if(id != null){
+        if (id != null) {
             Boolean result = monopatinRepository.existsById(id);
-            if (result){
+            if (result) {
                 monopatinRepository.deleteById(id);
                 return "Eliminado exitosamente";
             }
@@ -50,13 +52,13 @@ public class MonopatinServiceImp implements MonopatinService {
     }
 
     @Override
-    public Optional<Monopatin> actulizarMonopatin(int km,String ubicacion, String estado, ObjectId id) {
+    public Optional<Monopatin> actulizarMonopatin(int km, String ubicacion, String estado, ObjectId id) {
         Optional<Monopatin> monopatin = monopatinRepository.findById(id);
-        if (monopatin.isPresent()){
+        if (monopatin.isPresent()) {
             Monopatin monopatinActual = monopatin.get();
-            monopatinActual.setKm_totales(monopatinActual.getKm_totales()+km);
+            monopatinActual.setKm_totales(monopatinActual.getKm_totales() + km);
             monopatinActual.setUbicacion(ubicacion);
-            monopatinActual.setKm_recorridos(monopatinActual.getKm_recorridos()+km);
+            monopatinActual.setKm_recorridos(monopatinActual.getKm_recorridos() + km);
             monopatinActual.getEstado().setEstado(estado);
             monopatinRepository.save(monopatinActual);
         }
@@ -65,12 +67,12 @@ public class MonopatinServiceImp implements MonopatinService {
 
     @Override
     public Optional<Monopatin> obtenerMonopatin(ObjectId id) {
-        Optional<Monopatin> monopatin=(monopatinRepository.findById(id));
+        Optional<Monopatin> monopatin = (monopatinRepository.findById(id));
         return monopatin;
     }
 
     @Override
-    public List<Monopatin> listaMonopatines(){
+    public List<Monopatin> listaMonopatines() {
         return monopatinRepository.findAll();
     }
 
@@ -78,8 +80,8 @@ public class MonopatinServiceImp implements MonopatinService {
     public List<Monopatin> reporteMonopatinesPorKmR(int km) {
         List<Monopatin> monopatines = this.listaMonopatines();
         List<Monopatin> monopatineskms = new ArrayList<>();
-        for (Monopatin m: monopatines){
-            if (m.getKm_recorridos()>=km){
+        for (Monopatin m : monopatines) {
+            if (m.getKm_recorridos() >= km) {
                 monopatineskms.add(m);
             }
         }
@@ -91,18 +93,18 @@ public class MonopatinServiceImp implements MonopatinService {
         List<Monopatin> monopatines = this.listaMonopatines();
         int cantMant = 0;
         int cantFun = 0;
-        for(Monopatin m:monopatines){
-            if ("habilitado".equals(m.getEstado().getEstado())){
+        for (Monopatin m : monopatines) {
+            if ("habilitado".equals(m.getEstado().getEstado())) {
                 cantFun++;
-            }else if ("mantenimiento".equals(m.getEstado().getEstado())){
+            } else if ("mantenimiento".equals(m.getEstado().getEstado())) {
                 cantMant++;
             }
         }
-        return ("Monopatines habilitados: "+cantFun+"\nMonopatines en mantenimiento: "+cantMant);
+        return ("Monopatines habilitados: " + cantFun + "\nMonopatines en mantenimiento: " + cantMant);
     }
 
     @Override
-    public List<MonopatinDTO> monopatinesCercanos(String ubicacion){
+    public List<MonopatinDTO> monopatinesCercanos(String ubicacion) {
         //ubicacion del usuario
         List<MonopatinDTO> monopatinesCercanos = new ArrayList<>();
         String ubicacionUsuario = ubicacion;
@@ -112,7 +114,7 @@ public class MonopatinServiceImp implements MonopatinService {
         double distanciaMaxima = 0.3; // Umbral de distancia en kilómetros (300mts)
         List<Monopatin> monopatines = this.listaMonopatines();
 
-        for(Monopatin m: monopatines){
+        for (Monopatin m : monopatines) {
             String[] coordenadaMonopatin = m.getUbicacion().split(",");
             double latitudMonopatin = Double.parseDouble(coordenadaMonopatin[0]);
             double longitudMonopatin = Double.parseDouble(coordenadaMonopatin[1]);
@@ -148,40 +150,46 @@ public class MonopatinServiceImp implements MonopatinService {
 
     /**
      * Metodo para iniciar el viaje desde el monopatin
+     *
      * @param viaje
      * @param viajeDto
-     * @param idMon*/
-    public void iniciarViaje(String viaje, ViajeDTO viajeDto, ObjectId idMon){
+     * @param idMon
+     */
+    public void iniciarViaje(String viaje, ViajeDTO viajeDto, ObjectId idMon) {
         Optional<Monopatin> monopatin = monopatinRepository.findById(idMon);
         Monopatin monopatinEnViaje = monopatin.orElse(null);
-        if (monopatinEnViaje!=null){
+        if (monopatinEnViaje != null) {
             //Agrego viaje al monopatin
             int cant = monopatinEnViaje.getCantViajes();
-            monopatinEnViaje.setCantViajes(cant+1);
-            monopatinRepository.save(monopatinEnViaje);
-            this.restTemplate.postForObject(this.url_viaje+viaje, monopatinEnViaje, Monopatin.class, viajeDto, ViajeDTO.class);
+            monopatinEnViaje.setCantViajes(cant + 1);
+            //vinculamos el viaje al monopatin
+            viajeDto.setIdMonopatin(idMon);
+            this.restTemplate.postForObject(this.url_viaje + viaje, monopatinEnViaje, Monopatin.class, viajeDto, ViajeDTO.class);
         }
     }
 
     /**
      * Metodo para finalizar el viaje desde el monopatim
+     *
      * @param viaje
      * @param viajeDTO
-     * @param idViaje*/
+     * @param idViaje
+     */
     @Override
     public void finalizarViaje(String viaje, ViajeDTO viajeDTO, int idViaje) {
         //verifico si es una parada permitida para dejar el monopatin
-        String ubicacion =viajeDTO.getDestinoDelViaje();
+        String ubicacion = viajeDTO.getDestinoDelViaje();
         Parada parada = paradaService.paradaExistente(ubicacion);
-        String estadoDeLaParada= paradaService.estadoDeLaParadaActual(parada, ubicacion);
+        String estadoDeLaParada = paradaService.estadoDeLaParadaActual(parada, ubicacion);
         //caso de ser una parada permita dejara finalizar el viaje
-        if("permitida".equals(estadoDeLaParada)){
-            this.restTemplate.put(this.url_viaje +viaje, viajeDTO, idViaje);
+        if ("permitida".equals(estadoDeLaParada)) {
+            this.restTemplate.put(this.url_viaje + viaje, viajeDTO, idViaje);
         }
         //En caso contrario el metodo arrojará un error
     }
+
     @Override
-    public void pausarViaje(String viaje, PausaDTO pausaDTO, int idViaje){
+    public void pausarViaje(String viaje, PausaDTO pausaDTO, int idViaje) {
         this.restTemplate.postForObject(this.url_viaje + viaje, pausaDTO, Void.class, idViaje);
     }
 
@@ -191,4 +199,40 @@ public class MonopatinServiceImp implements MonopatinService {
         this.restTemplate.put(url, pausaDTO, pausaId);
     }
 
+    @Override
+    public List<ViajeDTO> consultarViajesPorAño(String endpoint, int anio, String token) {
+        String url = this.url_viaje + endpoint.replace("{anio}", String.valueOf(anio));
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        ResponseEntity<List<ViajeDTO>> response = restTemplate.exchange(
+                url, HttpMethod.GET, entity, new ParameterizedTypeReference<List<ViajeDTO>>() {}
+        );
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return response.getBody();
+        } else {
+            // Manejar otros códigos de estado según sea necesario
+            return null;
+        }
+    }
+
+    @Override
+    public List<Monopatin> obtenerMonopatinConMasViajesEnAnio(int anio, String token, int x) {
+        // Llamada al microservicio de viaje para obtener todos los viajes en un año específico
+        List<ViajeDTO> viajes = consultarViajesPorAño("/viajesPorAnio/{anio}", anio, token);
+        List<Monopatin>monopatines = listaMonopatines();
+        List<Monopatin>filtrado = new ArrayList<>();
+
+        for(Monopatin monopatin: monopatines){
+            if(monopatin.getCantViajes()> x){
+                for(ViajeDTO viajeDTO : viajes){
+                    if(!filtrado.contains(monopatin)){
+                        filtrado.add(monopatin);
+                    }
+                }
+            }
+        }
+
+        return filtrado;
+    }
 }

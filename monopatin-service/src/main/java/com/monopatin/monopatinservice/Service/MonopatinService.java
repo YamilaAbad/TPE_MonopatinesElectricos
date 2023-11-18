@@ -5,6 +5,7 @@ import com.monopatin.monopatinservice.DTO.PausaDTO;
 import com.monopatin.monopatinservice.DTO.ViajeDTO;
 import com.monopatin.monopatinservice.Model.Monopatin;
 import org.bson.types.ObjectId;
+import org.springframework.http.ResponseEntity;
 
 import java.util.Optional;
 import java.util.List;
@@ -35,8 +36,9 @@ public interface MonopatinService {
     void cancelarPausaEnViaje(String viaje, PausaDTO pausaDTO, int idPausa);
 
 
+    List<ViajeDTO> consultarViajesPorAño(String s, int anio, String token);
 
-
+    List<Monopatin> obtenerMonopatinConMasViajesEnAnio(int anio, String token, int x);
 }
 
 

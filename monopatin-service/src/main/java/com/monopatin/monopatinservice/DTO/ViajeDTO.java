@@ -2,6 +2,7 @@ package com.monopatin.monopatinservice.DTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.bson.types.ObjectId;
 
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -11,6 +12,7 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 public class ViajeDTO {
     private int idViaje;
+    private ObjectId idMonopatin;
     private String origenDelViaje;
     private String destinoDelViaje;
     private Time horaInicioViaje;
