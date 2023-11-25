@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.Optional;
 import java.util.List;
 public interface MonopatinService {
+    //!----------------------------------------- Acciones del monopatin ------------------------------------------------
     void guardarMonopatin(MonopatinDTO monopatin);
 
     String eliminarMonopatin(ObjectId id);
@@ -20,21 +21,15 @@ public interface MonopatinService {
     Optional<Monopatin> obtenerMonopatin(ObjectId id);
 
     List<Monopatin> listaMonopatines();
-
-    List<Monopatin> reporteMonopatinesPorKmR(int km);
-
-    String cantidadDeMonopatinesEstados();
-
     List<MonopatinDTO> monopatinesCercanos(String ubicacion);
 
+    //!-------------- Relacion del microservicio de monopatin con el microservicio de Viaje ----------------------------
     void iniciarViaje(String viaje, ViajeDTO viajeDTO, ObjectId idMon, String token);
-    //void iniciarViaje(String viaje, ViajeDTO viajeDTO, ObjectId idMon);
-    void finalizarViaje(String viaje, ViajeDTO viajeDTO, int idViaje, String token);
+    void finalizarViaje(String s, ViajeDTO viajeDTO, int viajeId, String token);
 
-    void pausarViaje(String s, PausaDTO pausaDTO, int viajeId);
+    void pausarViaje(String s, PausaDTO pausaDTO, int viajeId, String token);
 
     void cancelarPausaEnViaje(String viaje, PausaDTO pausaDTO, int idPausa);
-
 
     List<ViajeDTO> consultarViajesPorAño(String s, int anio, String token);
 
@@ -46,7 +41,12 @@ public interface MonopatinService {
 
     List<ViajeDTO> obtenerTodosLosViajesSinPausas(String s, String token);
 
+    //!------------------------------------------------ Reportes -------------------------------------------------------
+    List<Monopatin> reporteMonopatinesPorKmR(int km);
+    String cantidadDeMonopatinesEstados();
     ResponseEntity<String> generarInformeUsoMonopatines(String viaje, int kmParaMantenimiento, boolean incluirPausas, java.lang.String token);
+
+
 
 }
 

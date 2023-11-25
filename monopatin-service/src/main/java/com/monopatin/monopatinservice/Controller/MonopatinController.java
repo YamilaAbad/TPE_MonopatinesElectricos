@@ -28,8 +28,8 @@ public class MonopatinController {
     @Autowired
     JwtService jwtService;
 
-    //obtengo todos los monopatines
-    @GetMapping("/monopatines")
+    //!----------------------------------------- Acciones del monopatin ------------------------------------------------
+    @GetMapping("/monopatines")//obtengo todos los monopatines
     public List<Monopatin> getAllMonopatines(@RequestHeader("Authorization") String authorizationHeader) {
         String token = authorizationHeader.replace("Bearer ", "");
         if (jwtService.isTokenValid(token)) {
@@ -39,9 +39,7 @@ public class MonopatinController {
             return null;
         }
     }
-
-    //obtengo un monopatin
-    @GetMapping("/monopatin/{id}")
+    @GetMapping("/monopatin/{id}") //obtengo un monopatin
     public Optional<Monopatin> getMonopatin(@RequestHeader("Authorization") String authorizationHeader, @PathVariable ObjectId id) {
         String token = authorizationHeader.replace("Bearer ", "");
         if (jwtService.isTokenValid(token)) {
@@ -51,39 +49,7 @@ public class MonopatinController {
             return null;
         }
     }
-
-    //reporte de uso de monopatines por kilómetros recorridos
-    @GetMapping("/reporteMonopatinesPorKmsRecorridos/{km}")
-    public List<Monopatin> reporteMonopatinesPorKmR(@RequestHeader("Authorization") String authorizationHeader, @PathVariable int km) {
-        String token = authorizationHeader.replace("Bearer ", "");
-        if (jwtService.isTokenValid(token)) {
-            return monopatinService.reporteMonopatinesPorKmR(km);
-        } else {
-            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
-            return null;
-        }
-    }
-
-    //reporte de la cantidad de monopatines en operación vs en mantenimiento
-    @GetMapping("/reporteMonopatinesEstado")
-    public ResponseEntity<String> cantidadDeMonopatinesEstados(@RequestHeader("Authorization") String authorizationHeader) {
-        //extrae el token del encabezado de autorización
-        String token = authorizationHeader.replace("Bearer ", "");
-        if (jwtService.isTokenValid(token)) {
-            return ResponseEntity.ok(monopatinService.cantidadDeMonopatinesEstados());
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
-        }
-    }
-
-    private String obtenerReporteMonopatines(String username) {
-        // Realiza la lógica para obtener el reporte de monopatines según el usuario
-        // Devuelve el reporte como un String
-        return "Reporte de monopatines para el usuario: " + username;
-    }
-
-    //lista de monopatines cercanos a la ubicacion enviada por endpoint (ubicacion del usuario)
-    @GetMapping("/monopatinesCercanos/{ubicacion}")
+    @GetMapping("/monopatinesCercanos/{ubicacion}")//lista de monopatines cercanos a la ubicacion enviada por endpoint (ubicacion del usuario)
     public List<MonopatinDTO> monopatinesCercanos(@RequestHeader("Authorization") String authorizationHeader, @PathVariable String ubicacion) {
         String token = authorizationHeader.replace("Bearer ", "");
         if (jwtService.isTokenValid(token)) {
@@ -93,9 +59,7 @@ public class MonopatinController {
             return null;
         }
     }
-
-    //creo un nuevo monopatin
-    @PostMapping("/crearMonopatin")
+    @PostMapping("/crearMonopatin") //creo un nuevo monopatin
     public void crearMonopatin(@RequestHeader("Authorization") String authorizationHeader, @RequestBody MonopatinDTO monopatin) {
         String token = authorizationHeader.replace("Bearer ", "");
         if (jwtService.isTokenValid(token)) {
@@ -104,24 +68,7 @@ public class MonopatinController {
             ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
         }
     }
-
-    //inicio un viaje desde el monopatin dado
-   @PostMapping("/iniciarViaje/{idMon}")
-    public void iniciarViaje(@RequestHeader("Authorization") String authorizationHeader, @RequestBody ViajeDTO viajeDTO, @PathVariable ObjectId idMon) {
-        String token = authorizationHeader.replace("Bearer ", "");
-        if (jwtService.isTokenValid(token)) {
-            monopatinService.iniciarViaje("/inicioViaje", viajeDTO, idMon, token);//usuarioService.verificar("/getTokenUser",user)
-        } else {
-            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
-        }
-    }
-    /*@PostMapping("/iniciarViaje/{idMon}")
-    public void iniciarViaje(@RequestBody ViajeDTO viajeDTO, @PathVariable ObjectId idMon) {
-        monopatinService.iniciarViaje("/inicioViaje", viajeDTO, idMon);//usuarioService.verificar("/getTokenUser",user)
-    }*/
-
-    //actualizo un monopatin
-    @PutMapping("/actualizar/{km}/{ubicacion}/{estado}/{id}")
+    @PutMapping("/actualizar/{km}/{ubicacion}/{estado}/{id}")   //actualizo un monopatin
     public void actualizarMonopatin(@RequestHeader("Authorization") String authorizationHeader, @PathVariable int km, @PathVariable String ubicacion, @PathVariable String estado, @PathVariable ObjectId id) {
         String token = authorizationHeader.replace("Bearer ", "");
         if (jwtService.isTokenValid(token)) {
@@ -131,8 +78,7 @@ public class MonopatinController {
         }
     }
 
-    //elimino un monopatin
-    @DeleteMapping("/eliminar/{id}")
+    @DeleteMapping("/eliminar/{id}")//elimino un monopatin
     public String eliminarMonopatin(@RequestHeader("Authorization") String authorizationHeader, @PathVariable ObjectId id) {
         String token = authorizationHeader.replace("Bearer ", "");
         if (jwtService.isTokenValid(token)) {
@@ -142,8 +88,17 @@ public class MonopatinController {
             return null;
         }
     }
-
-    @PutMapping("/finalizarViaje/{viajeId}")
+    //!-------------- Relacion del microservicio de monopatin con el microservicio de Viaje ----------------------------
+    @PostMapping("/iniciarViaje/{idMon}")//inicio de viaje
+    public void iniciarViaje(@RequestHeader("Authorization") String authorizationHeader, @RequestBody ViajeDTO viajeDTO, @PathVariable ObjectId idMon) {
+        String token = authorizationHeader.replace("Bearer ", "");
+        if (jwtService.isTokenValid(token)) {
+            monopatinService.iniciarViaje("/inicioViaje", viajeDTO, idMon, token);//usuarioService.verificar("/getTokenUser",user)
+        } else {
+            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
+        }
+    }
+    @PutMapping("/finalizarViaje/{viajeId}")//finalizacion de viaje
     public ResponseEntity<ViajeDTO> finalizarViaje(@RequestHeader("Authorization") String authorizationHeader, @PathVariable int viajeId, @RequestBody ViajeDTO viajeDTO) {
         String token = authorizationHeader.replace("Bearer ", "");
         if (jwtService.isTokenValid(token)) {
@@ -153,19 +108,18 @@ public class MonopatinController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
-
-    @PostMapping("pausaViaje/{idViaje}")
+    @PostMapping("/pausaViaje/{idViaje}") //Pausar viaje
     public ResponseEntity<ViajeDTO> pausarViaje(@RequestHeader("Authorization") String authorizationHeader, @PathVariable int idViaje, @RequestBody PausaDTO pausaDTO) {
         String token = authorizationHeader.replace("Bearer ", "");
         if (jwtService.isTokenValid(token)) {
-            monopatinService.pausarViaje("/crearPausa/{idViaje}", pausaDTO, idViaje);
+            monopatinService.pausarViaje("/crearPausa/{idViaje}", pausaDTO, idViaje, token);
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @PutMapping("cancelarpausa/{pausaId}")
+    @PutMapping("/cancelarpausa/{pausaId}")//Cancelar pausa
     public ResponseEntity<ViajeDTO> cancelarPausaEnViaje(@RequestHeader("Authorization") String authorizationHeader, @PathVariable int pausaId, @RequestBody PausaDTO pausaDTO) {
         String token = authorizationHeader.replace("Bearer ", "");
         if (jwtService.isTokenValid(token)) {
@@ -186,7 +140,6 @@ public class MonopatinController {
             return null;
         }
     }
-
     @GetMapping("/monopatinesConMasDeXViajesEnAnio/{x}/{anio}")
     public List<Monopatin> obtenerMonopatin(@RequestHeader("Authorization") String authorizationHeader, @PathVariable int anio, @PathVariable int x) {
         String token = authorizationHeader.replace("Bearer", "");
@@ -231,6 +184,35 @@ public class MonopatinController {
         return null;
     }
 
+    //!------------------------------------------------ Reportes -------------------------------------------------------
+    //reporte de uso de monopatines por kilómetros recorridos
+    @GetMapping("/reporteMonopatinesPorKmsRecorridos/{km}")
+    public List<Monopatin> reporteMonopatinesPorKmR(@RequestHeader("Authorization") String authorizationHeader, @PathVariable int km) {
+        String token = authorizationHeader.replace("Bearer ", "");
+        if (jwtService.isTokenValid(token)) {
+            return monopatinService.reporteMonopatinesPorKmR(km);
+        } else {
+            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
+            return null;
+        }
+    }
+
+    //reporte de la cantidad de monopatines en operación vs en mantenimiento
+    @GetMapping("/reporteMonopatinesEstado")
+    public ResponseEntity<String> cantidadDeMonopatinesEstados(@RequestHeader("Authorization") String authorizationHeader) {
+        //extrae el token del encabezado de autorización
+        String token = authorizationHeader.replace("Bearer ", "");
+        if (jwtService.isTokenValid(token)) {
+            return ResponseEntity.ok(monopatinService.cantidadDeMonopatinesEstados());
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no válido");
+        }
+    }
+    private String obtenerReporteMonopatines(String username) {
+        // Realiza la lógica para obtener el reporte de monopatines según el usuario
+        // Devuelve el reporte como un String
+        return "Reporte de monopatines para el usuario: " + username;
+    }
     @GetMapping("/reportePorKilometro/{kmParaMantenimiento}")
     public ResponseEntity<String> generarInformeUdoMonopatines(@RequestHeader("Authorization") String authorizationHeader,@PathVariable int kmParaMantenimiento, @RequestParam(required = false, defaultValue = "false") boolean incluirPausas) {
         String token = authorizationHeader.replace("Bearer ", "");

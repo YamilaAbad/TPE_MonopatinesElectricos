@@ -13,8 +13,13 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class MonopatinServiceImp implements MonopatinService {
@@ -27,7 +32,12 @@ public class MonopatinServiceImp implements MonopatinService {
 
     @Autowired
     ParadaService paradaService;
+    private final WebClient webClient;
 
+    public MonopatinServiceImp(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.baseUrl("http://localhost:8080/service_viaje/").build();
+    }
+    //!----------------------------------------- Acciones del monopatin ------------------------------------------------
     @Override
     public void guardarMonopatin(MonopatinDTO monopatinDTO) {
         Monopatin monopatin = new Monopatin();
@@ -76,6 +86,178 @@ public class MonopatinServiceImp implements MonopatinService {
         return monopatinRepository.findAll();
     }
 
+    //!-------------- Relacion del microservicio de monopatin con el microservicio de Viaje ----------------------------
+    /**
+     * Metodo para inicia el viaje
+     * @param viaje
+     * @param viajeDto
+     * @param idMon
+     * @param token
+     */
+    public void iniciarViaje(String viaje, ViajeDTO viajeDto, ObjectId idMon, String token) {
+        // Llamada al servicio de viaje para guardar el viaje
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token);
+        HttpEntity<ViajeDTO> requestEntity = new HttpEntity<>(viajeDto, headers);
+        WebClient webClient = WebClient.create(this.url_viaje + viaje);
+        try {
+            webClient.post()
+                    .headers(httpHeaders -> httpHeaders.addAll(headers))
+                    .body(Mono.just(viajeDto), ViajeDTO.class)
+                    .retrieve()
+                    .toBodilessEntity()
+                    .block();  // Esperar a que la llamada al servicio de viaje se complete
+
+            incrementarCantidadViajes(idMon);// Incrementar la cantidad de viajes en el monopatín
+        } catch (WebClientResponseException ex) {
+            // Manejar excepciones específicas, como 403 Forbidden
+            if (ex.getStatusCode() == HttpStatus.FORBIDDEN) {
+                throw new RuntimeException("Acceso denegado al servicio de viaje");
+            } else {
+                throw new RuntimeException("Error al llamar al servicio de viaje: " + ex.getRawStatusCode());
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException("Error general al llamar al servicio de viaje: " + ex.getMessage());
+        }
+    }
+
+    /**
+     * Metodo para finalizar el viaje
+     * @param viaje
+     * @param viajeDTO
+     * @param idViaje
+     * @param token*/
+    @Override
+    public void finalizarViaje(String viaje, ViajeDTO viajeDTO, int idViaje, String token) {
+        // Verificar si es una parada permitida para dejar el monopatín
+        String ubicacion = viajeDTO.getDestinoDelViaje();
+        Parada parada = paradaService.paradaExistente(ubicacion);
+        String estadoDeLaParada = paradaService.estadoDeLaParadaActual(parada, ubicacion);
+
+        // Caso de ser una parada permitida para finalizar el viaje
+        if ("permitida".equals(estadoDeLaParada)) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + token);
+            HttpEntity<ViajeDTO> requestEntity = new HttpEntity<>(viajeDTO, headers);
+            restTemplate.put(this.url_viaje + viaje, requestEntity, idViaje);
+        } else {
+            // En caso contrario, puedes manejar el error de alguna manera
+            throw new RuntimeException("No se puede finalizar el viaje en una parada no permitida");
+        }
+    }
+
+    /**
+     * Incremento de los viajes en el monopatin
+     * @param idMon*/
+    private void incrementarCantidadViajes(ObjectId idMon) {
+        // Verificar si el monopatín existe
+        Monopatin monopatinEnViaje = monopatinRepository.findById(idMon).orElse(null);
+
+        // Incrementar la cantidad de viajes en el monopatín
+        if (monopatinEnViaje != null) {
+            monopatinEnViaje.setCantViajes(monopatinEnViaje.getCantViajes() + 1);
+            monopatinRepository.save(monopatinEnViaje);  // Guardar los cambios en la base de datos
+        }
+    }
+
+    @Override
+    public void pausarViaje(String viaje, PausaDTO pausaDTO, int idViaje, String token) {
+        this.restTemplate.postForObject(this.url_viaje + viaje, pausaDTO, Void.class, idViaje);
+    }
+
+    @Override
+    public void cancelarPausaEnViaje(String viaje, PausaDTO pausaDTO, int pausaId) {
+        String url = this.url_viaje + "/cancelarPausa/{pausaId}";
+        this.restTemplate.put(url, pausaDTO, pausaId);
+    }
+
+    @Override
+    public List<ViajeDTO> consultarViajesPorAño(String endpoint, int anio, String token) {
+        String url = this.url_viaje + endpoint.replace("{anio}", String.valueOf(anio));
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        ResponseEntity<List<ViajeDTO>> response = restTemplate.exchange(
+                url, HttpMethod.GET, entity, new ParameterizedTypeReference<List<ViajeDTO>>() {}
+        );
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return response.getBody();
+        } else {
+            // Manejar otros códigos de estado según sea necesario
+            return null;
+        }
+    }
+
+    @Override
+    public List<Monopatin> obtenerMonopatinConMasViajesEnAnio(int anio, String token, int x) {
+        // Llamada al microservicio de viaje para obtener todos los viajes en un año específico
+        List<ViajeDTO> viajes = consultarViajesPorAño("/viajesPorAnio/{anio}", anio, token);
+        List<Monopatin>monopatines = listaMonopatines();
+        List<Monopatin>filtrado = new ArrayList<>();
+
+        for(Monopatin monopatin: monopatines){
+            if(monopatin.getCantViajes()> x){
+                for(ViajeDTO viajeDTO : viajes){
+                    if(!filtrado.contains(monopatin)){
+                        filtrado.add(monopatin);
+                    }
+                }
+            }
+        }
+        return filtrado;
+    }
+    @Override
+    public List<ViajeDTO>obtenerTodosLosViajes(String viaje, String token) {
+        String url = this.url_viaje+viaje;
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        ResponseEntity<List<ViajeDTO>> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                entity,
+                new ParameterizedTypeReference<List<ViajeDTO>>() {});
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return response.getBody();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public List<ViajeDTO> obtenerTodosLosViajesConPausas(String viaje, String token) {
+        String url = this.url_viaje+viaje;
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        ResponseEntity<List<ViajeDTO>> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                entity,
+                new ParameterizedTypeReference<List<ViajeDTO>>() {});
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return response.getBody();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public List<ViajeDTO> obtenerTodosLosViajesSinPausas(String viaje, String token) {
+        String url = this.url_viaje+viaje;
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        ResponseEntity<List<ViajeDTO>> response = restTemplate.exchange(
+                url, HttpMethod.GET, entity, new ParameterizedTypeReference<List<ViajeDTO>>() {}
+        );
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return response.getBody();
+        } else {
+            return null;
+        }
+    }
+    //!------------------------------------------------ Reportes -------------------------------------------------------
     @Override
     public List<Monopatin> reporteMonopatinesPorKmR(int km) {
         List<Monopatin> monopatines = this.listaMonopatines();
@@ -131,7 +313,6 @@ public class MonopatinServiceImp implements MonopatinService {
             }
         }
         return monopatinesCercanos;
-
     }
 
     private double calcularDistancia(double latitudUsuario, double longitudUsuario, double latitudMonopatin, double longitudMonopatin) {
@@ -147,192 +328,22 @@ public class MonopatinServiceImp implements MonopatinService {
 
         return distancia; // Distancia en kilómetros
     }
-
-    /**
-     * Metodo para iniciar el viaje desde el monopatin
-     *
-     * @param viaje
-     * @param viajeDto
-     * @param idMon
-     */
-    public void iniciarViaje(String viaje, ViajeDTO viajeDto, ObjectId idMon, String token) {
-        Optional<Monopatin> monopatinOptional = monopatinRepository.findById(idMon);
-        Monopatin monopatinEnViaje = monopatinOptional.orElse(null);
-
-        if (monopatinEnViaje != null) {
-            // Agrego viaje al monopatin
-            int cant = monopatinEnViaje.getCantViajes();
-            monopatinEnViaje.setCantViajes(cant + 1);
-
-            // Vinculamos el viaje al monopatin
-            viajeDto.setIdMonopatin(idMon);
-
-            // Configuración de encabezados y entidad HTTP
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + token);
-            HttpEntity<Monopatin> requestEntity = new HttpEntity<>(monopatinEnViaje, headers);
-
-            // Llamada al servicio de viaje utilizando el endpoint fijo
-            ResponseEntity<Void> response = restTemplate.exchange(this.url_viaje+viaje, HttpMethod.POST, requestEntity, Void.class, viajeDto);
-
-            if (response.getStatusCode() == HttpStatus.OK) {
-                response.getBody();
-            }
-        }
-    }
-    /*public void iniciarViaje(String viaje, ViajeDTO viajeDto, ObjectId idMon) {
-        Optional<Monopatin> monopatin = monopatinRepository.findById(idMon);
-        Monopatin monopatinEnViaje = monopatin.orElse(null);
-        if (monopatinEnViaje != null) {
-            //Agrego viaje al monopatin
-            int cant = monopatinEnViaje.getCantViajes();
-            monopatinEnViaje.setCantViajes(cant + 1);
-            //vinculamos el viaje al monopatin
-            viajeDto.setIdMonopatin(idMon);
-            this.restTemplate.postForObject(this.url_viaje + viaje, monopatinEnViaje, Monopatin.class, viajeDto, ViajeDTO.class);
-        }
-    }*/
-
-    /**
-     * Metodo para finalizar el viaje desde el monopatim
-     *
-     * @param viaje
-     * @param viajeDTO
-     * @param idViaje
-     */
-    @Override
-    public void finalizarViaje(String viaje, ViajeDTO viajeDTO, int idViaje, String token) {
-        //verifico si es una parada permitida para dejar el monopatin
-        String ubicacion = viajeDTO.getDestinoDelViaje();
-        Parada parada = paradaService.paradaExistente(ubicacion);
-        String estadoDeLaParada = paradaService.estadoDeLaParadaActual(parada, ubicacion);
-        //caso de ser una parada permita dejara finalizar el viaje
-        if ("permitida".equals(estadoDeLaParada)) {
-            this.restTemplate.put(this.url_viaje + viaje, viajeDTO, idViaje);
-        }
-        //En caso contrario el metodo arrojará un error
-    }
-
-    @Override
-    public void pausarViaje(String viaje, PausaDTO pausaDTO, int idViaje) {
-        this.restTemplate.postForObject(this.url_viaje + viaje, pausaDTO, Void.class, idViaje);
-    }
-
-    @Override
-    public void cancelarPausaEnViaje(String viaje, PausaDTO pausaDTO, int pausaId) {
-        String url = this.url_viaje + "/cancelarPausa/{pausaId}";
-        this.restTemplate.put(url, pausaDTO, pausaId);
-    }
-
-    @Override
-    public List<ViajeDTO> consultarViajesPorAño(String endpoint, int anio, String token) {
-        String url = this.url_viaje + endpoint.replace("{anio}", String.valueOf(anio));
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + token);
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
-        ResponseEntity<List<ViajeDTO>> response = restTemplate.exchange(
-                url, HttpMethod.GET, entity, new ParameterizedTypeReference<List<ViajeDTO>>() {}
-        );
-        if (response.getStatusCode() == HttpStatus.OK) {
-            return response.getBody();
-        } else {
-            // Manejar otros códigos de estado según sea necesario
-            return null;
-        }
-    }
-
-    @Override
-    public List<Monopatin> obtenerMonopatinConMasViajesEnAnio(int anio, String token, int x) {
-        // Llamada al microservicio de viaje para obtener todos los viajes en un año específico
-        List<ViajeDTO> viajes = consultarViajesPorAño("/viajesPorAnio/{anio}", anio, token);
-        List<Monopatin>monopatines = listaMonopatines();
-        List<Monopatin>filtrado = new ArrayList<>();
-
-        for(Monopatin monopatin: monopatines){
-            if(monopatin.getCantViajes()> x){
-                for(ViajeDTO viajeDTO : viajes){
-                    if(!filtrado.contains(monopatin)){
-                        filtrado.add(monopatin);
-                    }
-                }
-            }
-        }
-        return filtrado;
-    }
-    @Override
-    public List<ViajeDTO>obtenerTodosLosViajes(String viaje, String token) {
-        String url = this.url_viaje+viaje;
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + token);
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
-        ResponseEntity<List<ViajeDTO>> response = restTemplate.exchange(
-                url, HttpMethod.GET, entity, new ParameterizedTypeReference<List<ViajeDTO>>() {}
-        );
-        if (response.getStatusCode() == HttpStatus.OK) {
-            return response.getBody();
-        } else {
-            // Manejar otros códigos de estado según sea necesario
-            return null;
-        }
-    }
-
-    @Override
-    public List<ViajeDTO> obtenerTodosLosViajesConPausas(String viaje, String token) {
-        String url = this.url_viaje+viaje;
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + token);
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
-        ResponseEntity<List<ViajeDTO>> response = restTemplate.exchange(
-                url, HttpMethod.GET, entity, new ParameterizedTypeReference<List<ViajeDTO>>() {}
-        );
-        if (response.getStatusCode() == HttpStatus.OK) {
-            return response.getBody();
-        } else {
-            // Manejar otros códigos de estado según sea necesario
-            return null;
-        }
-    }
-
-    @Override
-    public List<ViajeDTO> obtenerTodosLosViajesSinPausas(String viaje, String token) {
-        String url = this.url_viaje+viaje;
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + token);
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
-        ResponseEntity<List<ViajeDTO>> response = restTemplate.exchange(
-                url, HttpMethod.GET, entity, new ParameterizedTypeReference<List<ViajeDTO>>() {}
-        );
-        if (response.getStatusCode() == HttpStatus.OK) {
-            return response.getBody();
-        } else {
-            // Manejar otros códigos de estado según sea necesario
-            return null;
-        }
-    }
-
     @Override
     public ResponseEntity<String> generarInformeUsoMonopatines( String viaje, int kmParaMantenimiento, boolean incluirPausas, String token) {
-
         StringBuilder informe = new StringBuilder();
         List<ViajeDTO> viajes = obtenerTodosLosViajes("/viajes", token);
-
         List<Monopatin> monopatines = listaMonopatines();
-
         for (Monopatin monopatin : monopatines) {
             int kmRecorridos = monopatin.getKm_recorridos();
             String estado = monopatin.getEstado().getEstado();
-
             // Verificar si el monopatín necesita mantenimiento
             boolean necesitaMantenimiento = kmRecorridos >= kmParaMantenimiento;
-
             // Lógica para determinar si se deben incluir pausas o no
             List<ViajeDTO> viajesMonopatin = incluirPausas ? obtenerTodosLosViajesSinPausas("/viajesSinPausas", token)
                     : obtenerTodosLosViajesConPausas("/viajesConPausas", token);
-
             informe.append("Monopatin ID: ").append(monopatin.getIdMonopatin()).append("\n");
             informe.append("Kilometros recorridos: ").append(kmRecorridos).append("\n");
             informe.append("Estado: ").append(estado).append("\n");
-
             // Agregar información de mantenimiento si es necesario
             if (necesitaMantenimiento) {
                 informe.append("¡Este monopatín necesita mantenimiento!\n");
